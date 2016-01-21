@@ -1,0 +1,3 @@
+/target/
+authorizationserver/log4j-application.log
+.DS_Store
