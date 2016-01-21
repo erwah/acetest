@@ -1,4 +1,4 @@
-package se.wahlstromstekniska.acetestas;
+package se.wahlstromstekniska.acetest.authorizationserver;
 
 import java.util.Arrays;
 import java.util.List;

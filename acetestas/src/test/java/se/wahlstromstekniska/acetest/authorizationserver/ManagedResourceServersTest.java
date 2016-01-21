@@ -1,7 +1,10 @@
-package se.wahlstromstekniska.acetestas;
+package se.wahlstromstekniska.acetest.authorizationserver;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import se.wahlstromstekniska.acetest.authorizationserver.ManagedResourceServers;
+import se.wahlstromstekniska.acetest.authorizationserver.ResourceServer;
 
 public class ManagedResourceServersTest {
 

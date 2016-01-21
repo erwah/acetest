@@ -1,4 +1,4 @@
-package se.wahlstromstekniska.acetestas;
+package se.wahlstromstekniska.acetest.authorizationserver;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

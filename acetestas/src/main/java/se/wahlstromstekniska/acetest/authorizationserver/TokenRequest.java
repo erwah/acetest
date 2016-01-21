@@ -1,4 +1,4 @@
-package se.wahlstromstekniska.acetestas;
+package se.wahlstromstekniska.acetest.authorizationserver;
 
 import java.nio.charset.StandardCharsets;
 

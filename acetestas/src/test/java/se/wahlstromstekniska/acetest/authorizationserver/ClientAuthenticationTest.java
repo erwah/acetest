@@ -1,9 +1,12 @@
-package se.wahlstromstekniska.acetestas;
+package se.wahlstromstekniska.acetest.authorizationserver;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
+import se.wahlstromstekniska.acetest.authorizationserver.ClientCredentials;
 
 public class ClientAuthenticationTest {
 

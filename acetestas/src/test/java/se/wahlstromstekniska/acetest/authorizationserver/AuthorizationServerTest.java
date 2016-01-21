@@ -1,4 +1,4 @@
-package se.wahlstromstekniska.acetestas;
+package se.wahlstromstekniska.acetest.authorizationserver;
 
 import java.net.SocketException;
 
@@ -9,6 +9,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import se.wahlstromstekniska.acetest.authorizationserver.AuthorizationServer;
+import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
+import se.wahlstromstekniska.acetest.authorizationserver.ClientCredentials;
+import se.wahlstromstekniska.acetest.authorizationserver.Constants;
+import se.wahlstromstekniska.acetest.authorizationserver.ManagedResourceServers;
+import se.wahlstromstekniska.acetest.authorizationserver.ResourceServer;
 
 public class AuthorizationServerTest {
 	public static final String TOKEN = "token";
