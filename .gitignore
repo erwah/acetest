@@ -1,3 +1,4 @@
 /target/
 authorizationserver/log4j-application.log
 .DS_Store
+authorizationserver/src/main/resources/config.json
