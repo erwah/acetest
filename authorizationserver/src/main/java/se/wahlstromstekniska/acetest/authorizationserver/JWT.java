@@ -3,21 +3,21 @@ package se.wahlstromstekniska.acetest.authorizationserver;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public String generateJWT(RsaJsonWebKey rsaJsonWebKey, String aud) throws Exception {
+	public String generateJWT(EllipticCurveJsonWebKey signingKey, String aud) throws Exception {
 	    //
 	    // JSON Web Token is a compact URL-safe means of representing claims/attributes to be transferred between two parties.
 	    // This example demonstrates producing and consuming a signed JWT
 	    //
 
 	    // Give the JWK a Key ID (kid), which is just the polite thing to do
-	    rsaJsonWebKey.setKeyId("k1");
+	    signingKey.setKeyId("k1");
 
 	    // Create the Claims, which will be the content of the JWT
 	    JwtClaims claims = new JwtClaims();
@@ -38,15 +38,15 @@ public class JWT {
 	    jws.setPayload(claims.toJson());
 
 	    // The JWT is signed using the private key
-	    jws.setKey(rsaJsonWebKey.getPrivateKey());
+	    jws.setKey(signingKey.getPrivateKey());
 
 	    // Set the Key ID (kid) header because it's just the polite thing to do.
 	    // We only have one key in this example but a using a Key ID helps
 	    // facilitate a smooth key rollover process
-	    jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
+	    jws.setKeyIdHeaderValue(signingKey.getKeyId());
 
 	    // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
-	    jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+	    jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
 
 	    // Sign the JWS and produce the compact serialization or the complete JWT/JWS
 	    // representation, which is a string consisting of three dot ('.') separated

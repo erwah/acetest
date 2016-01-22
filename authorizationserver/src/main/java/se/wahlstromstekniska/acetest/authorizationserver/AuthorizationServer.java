@@ -12,10 +12,8 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.jose4j.jwk.RsaJsonWebKey;
-import org.jose4j.jwk.RsaJwkGenerator;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.lang.JoseException;
-import org.json.JSONException;
 
 
 public class AuthorizationServer extends CoapServer {
@@ -24,33 +22,23 @@ public class AuthorizationServer extends CoapServer {
 	
 	protected static final int COAP_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_PORT);
 
-	private static ManagedResourceServers managedResourceServers = ManagedResourceServers.getInstance();
-	private static ClientAuthentication auth = ClientAuthentication.getInstance();
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
 
 	
     public static void main(String[] args) throws Exception {
         try {
+
+            logger.info("Starting server.");
             AuthorizationServer server = new AuthorizationServer();
             server.addEndpoints();
             server.start();
-            
-            logger.info("Starting server.");
 
-            // add a new RS to test against
-            // TODO: move the pre-registered sensors to a configuration file instead.
-            ResourceServer tempSensorInLivingRoom = new ResourceServer("tempSensorInLivingRoom");
-            tempSensorInLivingRoom.addAuthorizedClient("myclient");
-            tempSensorInLivingRoom.setCsp(Constants.cspDTLS);
-
-        	managedResourceServers.addResourceServer(tempSensorInLivingRoom);
-
-        	logger.info("Added hardcoded resource server tempSensorInLivingRoom.");
-            auth.addClient(new ClientCredentials("myclient", "qwerty"));
-            
         } catch (SocketException e) {
             System.err.println("Failed to initialize server: " + e.getMessage());
         }
     }
+ 
+
 
     protected void addEndpoints() {
     	for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
@@ -90,7 +78,7 @@ public class AuthorizationServer extends CoapServer {
         	TokenRequest tokenRequest  = null;
         	try {
         		tokenRequest = new TokenRequest(payload);
-        	} catch (JSONException e) {
+        	} catch (Exception e) {
         		// request is not valid (missing mandatory attributes)
     			logger.info("Could not parse request: " + e.getMessage());
     			e.printStackTrace();
@@ -106,15 +94,13 @@ public class AuthorizationServer extends CoapServer {
         	}
         	else {
 	        	// validate client credentials
+        		ClientAuthentication auth = new ClientAuthentication();
 	        	boolean authenticated = auth.authenticate(tokenRequest.getClientID(), tokenRequest.getClientSecret());
 	
 	        	if(authenticated) {
-	    			logger.info("Client is sucessfully authenticated.");
-
-	        		// client authenticated successfully
 
 	        		// does user have access to the resource server
-	        		ResourceServer rs = managedResourceServers.getResourceServer(tokenRequest.getAud());
+	        		ResourceServer rs = config.getResourceServer(tokenRequest.getAud());
 	        		if(rs != null) {
 		    			logger.info("Found requested Resource Server in Authorization Servers control.");
 
@@ -122,24 +108,15 @@ public class AuthorizationServer extends CoapServer {
 	        				// generate a token for the client against the resource.
 			    			logger.info("Client " + tokenRequest.getClientID() + " is authorized to get token for the resource server " + rs.getAud());
 
-	        				// generate a key
-	        				// generate access token
-	        					// csp
-	        					// validity
-	        				
-	        			    // Generate an RSA key pair
-	        				// TODO: change to EC
 			    			logger.info("Minting a new access token.");
 
-	        			    RsaJsonWebKey rsaJsonWebKey;
 							try {
-								rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
-
+								// get authorization servers signing key
 		        				JWT jwt = new JWT();
 		        				
 		        				String token = null;
 		        				try {
-									token = jwt.generateJWT(rsaJsonWebKey, rs.getAud());
+									token = jwt.generateJWT(config.getAuthorizationServerKey(), rs.getAud());
 								} catch (Exception e) {
 					        		// failed to generate token.
 					        		exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, ErrorResponse.getInternalServerError());
@@ -155,7 +132,7 @@ public class AuthorizationServer extends CoapServer {
 
 		    	                exchange.respond(json);
 
-							} catch (JoseException e1) {
+							} catch (Exception e1) {
 		        				// could not generate keys
 								logger.error("Could not generate token." + e1.getMessage());
 								e1.printStackTrace();

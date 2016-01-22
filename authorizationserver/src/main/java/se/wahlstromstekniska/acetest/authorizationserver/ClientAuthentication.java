@@ -1,60 +1,44 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
-import java.util.ArrayList;
+import org.apache.log4j.Logger;
 
 public class ClientAuthentication {
-
-	private static ClientAuthentication instance = null;
-
-	ArrayList<ClientCredentials> clients = new ArrayList<ClientCredentials>();
 	
-	protected ClientAuthentication() {
-		
-	}
-	
-	public static ClientAuthentication getInstance() {
-		if(instance == null) {
-			instance = new ClientAuthentication();
-		}
-		return instance;
+	final static Logger logger = Logger.getLogger(ClientAuthentication.class);
+
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
+
+	public ClientAuthentication() {
 	}
 
-	
-	public boolean authenticate(String client_id, String client_secret) {
-		if(client_id == null 
-				|| client_id.trim().length() == 0 
-				|| client_secret == null 
-				|| client_secret.trim().length() == 0) {
+	/**
+	 * DO NOT USE THIS METHOD IN PRODUCTION! It's just a POC.
+	 * @param clientId
+	 * @param clientSecret
+	 * @return
+	 */
+	public boolean authenticate(String clientId, String clientSecret) {
+		// validate input
+		// TODO: add more validation.
+		if(clientId == null 
+				|| clientId.trim().length() == 0 
+				|| clientSecret == null 
+				|| clientSecret.trim().length() == 0) {
 			return false;
 		}
 		else {
 			boolean ok = false;
 			
-			for (ClientCredentials client : clients) {
-				if(client.getClient_id().equals(client_id) && client.getClient_secret().equals(client_secret)) {
-					System.out.println("Client authentication successful. NOTE: Hardcoded creds!");
+			ClientCredentials client = config.getClient(clientId);
+			if(client != null) {
+				if(client.getClient_id().equals(clientId) && client.getClient_secret().equals(clientSecret)) {
+					logger.info("Client '" + clientId + "' authenticated successfully.");
 					ok = true;
 				}
 			}
 			
 			return ok;
 		}
-	}
-	
-	public void addClient(ClientCredentials client) {
-		clients.add(client);
-	}
-	
-	public void deleteClient(String client_id) {
-		ClientCredentials clientToDelete = null;
-		
-		for (ClientCredentials client : clients) {
-			if(client.getClient_id().equals(client_id)) {
-				clientToDelete = client;
-			}
-		}
-		
-		clients.remove(clientToDelete);
 	}
 	
 }

@@ -5,23 +5,18 @@ import java.net.SocketException;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.jose4j.jwk.EcJwkGenerator;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.keys.EllipticCurves;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import se.wahlstromstekniska.acetest.authorizationserver.AuthorizationServer;
-import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
-import se.wahlstromstekniska.acetest.authorizationserver.ClientCredentials;
-import se.wahlstromstekniska.acetest.authorizationserver.Constants;
-import se.wahlstromstekniska.acetest.authorizationserver.ManagedResourceServers;
-import se.wahlstromstekniska.acetest.authorizationserver.ResourceServer;
-
 public class AuthorizationServerTest {
 	public static final String TOKEN = "token";
 	
-	private static ManagedResourceServers managedResourceServers = ManagedResourceServers.getInstance();
-	private static ClientAuthentication auth = ClientAuthentication.getInstance();
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
 	
 	public static final String VALID_POST = "{"
      + "  \"grant_type\" : \"client_credentials\","
@@ -81,17 +76,6 @@ public class AuthorizationServerTest {
 			server = new AuthorizationServer();
 	        server.addEndpoints();
 	        server.start();
-	        
-            // add a new RS to test against
-            // TODO: move the pre-registered sensors to a configuration file instead.
-            ResourceServer tempSensorInLivingRoom = new ResourceServer("tempSensorInLivingRoom");
-            tempSensorInLivingRoom.addAuthorizedClient("myclient");
-            tempSensorInLivingRoom.setCsp(Constants.cspDTLS);
-            
-        	managedResourceServers.addResourceServer(tempSensorInLivingRoom);
-	        
-            auth.addClient(new ClientCredentials("myclient", "qwerty"));
-
 		} catch (SocketException e) {
 			System.out.println("Failed to startup AuthorizationServer.");
 			e.printStackTrace();
@@ -104,9 +88,6 @@ public class AuthorizationServerTest {
 			server.stop();
 			server.destroy();
 			server = null;
-			
-			managedResourceServers.removeResourceServer("tempSensorInLivingRoom");
-			auth.deleteClient("myclient");
 		} catch (Exception e) {
 			System.out.println("Failed to shutdown AuthorizationServer.");
 			e.printStackTrace();
@@ -165,6 +146,36 @@ public class AuthorizationServerTest {
 		Response response = request.send().waitForResponse();
 
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
+	}
+
+	@Test
+	public void testSuccessClientGeneratedKeys() throws Exception {
+
+		JsonWebKey jwk;
+		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+		jwk.setKeyId("testkid");
+		
+		System.out.println(jwk.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE));
+
+		
+		String json = "{"
+	     + "  \"grant_type\" : \"client_credentials\","
+	     + "  \"aud\" : \"tempSensorInLivingRoom\","
+	     + "  \"key\" : " + jwk.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ","
+	     + "  \"client_id\" : \"myclient\","
+	     + "  \"client_secret\" : \"qwerty\""
+	   	 + "}";
+		
+		Request request = Request.newPost();
+		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
+		request.setPayload(json);
+		Response response = request.send().waitForResponse();
+	
+		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
+		Assert.assertNotNull("Client received no response", response);
+	
+		// TODO: Assert.assertEquals(expectations[i], response.getPayloadString());
+		// TODO: assert token!
 	}
 
 }

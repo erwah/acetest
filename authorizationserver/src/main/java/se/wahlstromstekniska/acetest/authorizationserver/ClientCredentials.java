@@ -23,4 +23,12 @@ public class ClientCredentials {
 	public void setClient_secret(String client_secret) {
 		this.client_secret = client_secret;
 	}
+
+	@Override
+	public String toString() {
+		return "ClientCredentials [client_id=" + client_id + ", client_secret=xxxx]";
+	}
+	
+	
+	
 }

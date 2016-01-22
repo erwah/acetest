@@ -2,6 +2,10 @@ package se.wahlstromstekniska.acetest.authorizationserver;
 
 import java.nio.charset.StandardCharsets;
 
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
+import org.jose4j.lang.JoseException;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -15,8 +19,9 @@ public class TokenRequest {
 	private String aud = "";
 	private String client_id = "";
 	private String client_secret = "";
+	private JsonWebKey key = null;
 	
-	public TokenRequest(byte[] payload) {
+	public TokenRequest(byte[] payload) throws JSONException, JoseException {
 		// is it JSON or CBOR?
 		// TODO: do the real check and add CBOR support
 		boolean isJSON = true;
@@ -28,6 +33,13 @@ public class TokenRequest {
 			setAud(obj.getString("aud"));
 			setClientID(obj.getString("client_id"));
 			setClientSecret(obj.getString("client_secret"));
+			
+			// either client or AS can generate keys
+			if(obj.has("key")) {
+				// client generated keys and sent public key
+				JsonWebKey jwk = JsonWebKey.Factory.newJwk(obj.getJSONObject("key").toString());
+				setKey(jwk);
+			}
 		}
 	}
 
@@ -81,8 +93,16 @@ public class TokenRequest {
 	@Override
 	public String toString() {
 		return "TokenRequest [grant_type=" + grant_type + ", aud=" + aud
-				+ ", client_id=" + client_id + ", client_secret=XXXXXXX]";
+				+ ", client_id=" + client_id + ", client_secret="
+				+ client_secret + ", key (public only)=" + key.toJson(OutputControlLevel.PUBLIC_ONLY) + "]";
 	}
-	
+
+	public JsonWebKey getKey() {
+		return key;
+	}
+
+	public void setKey(JsonWebKey key) {
+		this.key = key;
+	}
 	
 }

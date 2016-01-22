@@ -64,4 +64,13 @@ public class ResourceServer {
 			return false;
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "ResourceServer [aud=" + aud + ", accessTokens=" + accessTokens
+				+ ", authorizedClients=" + authorizedClients + ", csp=" + csp
+				+ "]";
+	}
+	
+
 }
