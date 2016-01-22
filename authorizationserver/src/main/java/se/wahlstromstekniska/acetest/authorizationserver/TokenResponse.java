@@ -19,16 +19,19 @@ public class TokenResponse {
 	}
 
 	public String getJSON() {
-		
-		// TODO: verify encoding in JWT lib?
-		// TODO: use JSON lib instead of hardcoded values, might have to change name of private variables to match it.
-		
-		return "{ "
+
+		String json = "{ "
 				+ "\n\t\"access_token\" : \"" + accessToken + "\"," 
 				+ "\n\t\"token_type\" : \"" + Constants.tokenTypePOP + "\","
-				+ "\n\t\"csp\" : \"" + csp+ "\","
-				+ "\n\t\"key\" : \"" + key + "\""
-				+ "\n}";
+				+ "\n\t\"csp\" : \"" + csp+ "\"";
+		
+		if(key != null) {
+			json += ",\n\t\"key\" : \"" + key + "\"";
+		}
+		
+		json += "\n}";
+		
+		return json;
 	}
 	
 	public String getAccessToken() {

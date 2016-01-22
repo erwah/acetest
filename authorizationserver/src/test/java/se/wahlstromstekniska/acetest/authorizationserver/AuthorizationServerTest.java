@@ -18,13 +18,6 @@ public class AuthorizationServerTest {
 	
 	private static ServerConfiguration config = ServerConfiguration.getInstance();
 	
-	public static final String VALID_POST = "{"
-     + "  \"grant_type\" : \"client_credentials\","
-     + "  \"aud\" : \"tempSensorInLivingRoom\","
-     + "  \"client_id\" : \"myclient\","
-     + "  \"client_secret\" : \"qwerty\""
-   	 + "}";
-
 	public static final String UNAUTHORIZED_USER_POST = "{"
 		     + "  \"grant_type\" : \"client_credentials\","
 		     + "  \"aud\" : \"tempSensorInLivingRoom\","
@@ -71,13 +64,11 @@ public class AuthorizationServerTest {
 
 	@Before
 	public void startupServer() throws Exception {
-		System.out.println("\nStarting AuthorizationServer.");
 		try {
 			server = new AuthorizationServer();
 	        server.addEndpoints();
 	        server.start();
 		} catch (SocketException e) {
-			System.out.println("Failed to startup AuthorizationServer.");
 			e.printStackTrace();
 		}
 	}
@@ -89,7 +80,6 @@ public class AuthorizationServerTest {
 			server.destroy();
 			server = null;
 		} catch (Exception e) {
-			System.out.println("Failed to shutdown AuthorizationServer.");
 			e.printStackTrace();
 		}
 	}
@@ -98,7 +88,15 @@ public class AuthorizationServerTest {
 	public void testSuccess() throws Exception {
 		Request request = Request.newPost();
 		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
-		request.setPayload(VALID_POST);
+		
+		String json = "{"
+			     + "  \"grant_type\" : \"client_credentials\","
+			     + "  \"aud\" : \"tempSensorInLivingRoom\","
+			     + "  \"client_id\" : \"myclient\","
+			     + "  \"client_secret\" : \"qwerty\""
+			   	 + "}";
+
+		request.setPayload(json);
 		Response response = request.send().waitForResponse();
 
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
@@ -107,7 +105,33 @@ public class AuthorizationServerTest {
 		// TODO: Assert.assertEquals(expectations[i], response.getPayloadString());
 		// TODO: assert token!
 	}
+
+	@Test
+	public void testSuccessClientGeneratedKeys() throws Exception {
+
+		JsonWebKey jwk;
+		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+		jwk.setKeyId("testkid");
+		
+		String json = "{"
+	     + "  \"grant_type\" : \"client_credentials\","
+	     + "  \"aud\" : \"tempSensorInLivingRoom\","
+	     + "  \"key\" : " + jwk.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ","
+	     + "  \"client_id\" : \"myclient\","
+	     + "  \"client_secret\" : \"qwerty\""
+	   	 + "}";
+		
+		Request request = Request.newPost();
+		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
+		request.setPayload(json);
+		Response response = request.send().waitForResponse();
 	
+		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
+		Assert.assertNotNull("Client received no response", response);
+	
+		// TODO: Assert.assertEquals(expectations[i], response.getPayloadString());
+		// TODO: assert token!
+	}
 
 	@Test
 	public void testWrongUser() throws Exception {
@@ -148,34 +172,5 @@ public class AuthorizationServerTest {
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 	}
 
-	@Test
-	public void testSuccessClientGeneratedKeys() throws Exception {
-
-		JsonWebKey jwk;
-		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
-		jwk.setKeyId("testkid");
-		
-		System.out.println(jwk.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE));
-
-		
-		String json = "{"
-	     + "  \"grant_type\" : \"client_credentials\","
-	     + "  \"aud\" : \"tempSensorInLivingRoom\","
-	     + "  \"key\" : " + jwk.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ","
-	     + "  \"client_id\" : \"myclient\","
-	     + "  \"client_secret\" : \"qwerty\""
-	   	 + "}";
-		
-		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
-		request.setPayload(json);
-		Response response = request.send().waitForResponse();
-	
-		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
-		Assert.assertNotNull("Client received no response", response);
-	
-		// TODO: Assert.assertEquals(expectations[i], response.getPayloadString());
-		// TODO: assert token!
-	}
 
 }

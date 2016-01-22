@@ -3,6 +3,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.security.Key;
 
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
@@ -12,18 +13,23 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
+import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.lang.JoseException;
+import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
+import org.jose4j.keys.AesKey;
+import org.jose4j.keys.EllipticCurves;
+import org.jose4j.lang.ByteUtil;
 
 
 public class AuthorizationServer extends CoapServer {
 
-	final static Logger logger = Logger.getLogger(AuthorizationServer.class);
-	
 	protected static final int COAP_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_PORT);
 
+	final static Logger logger = Logger.getLogger(AuthorizationServer.class);
 	private static ServerConfiguration config = ServerConfiguration.getInstance();
-
 	
     public static void main(String[] args) throws Exception {
         try {
@@ -38,8 +44,6 @@ public class AuthorizationServer extends CoapServer {
         }
     }
  
-
-
     protected void addEndpoints() {
     	for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
     		// only binds to IPv4 addresses and localhost
@@ -113,18 +117,37 @@ public class AuthorizationServer extends CoapServer {
 							try {
 								// get authorization servers signing key
 		        				JWT jwt = new JWT();
-		        				
 		        				String token = null;
-		        				try {
-									token = jwt.generateJWT(config.getAuthorizationServerKey(), rs.getAud());
-								} catch (Exception e) {
-					        		// failed to generate token.
-					        		exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, ErrorResponse.getInternalServerError());
-									e.printStackTrace();
+
+		        				// get key from client and if none, generate keys on AS and return encrypted keys to client
+								JsonWebKey clientsPublicKey = tokenRequest.getKey(); 
+								if(clientsPublicKey == null) {
+									clientsPublicKey = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+									clientsPublicKey.setKeyId("asgeneratedKey");
 								}
+
+								token = jwt.generateJWT(config.getAuthorizationServerKey(), rs.getAud(), clientsPublicKey);
 		        				
-		        				// TODO: fix key!!!!
-		        				TokenResponse response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), "todokey");
+								TokenResponse response = null;
+								if(tokenRequest.getKey() != null) {
+									response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null);
+								}
+								else {
+									
+									// TODO: Get a better key, this is just copy paste from jose4j examples
+									
+									 Key key = new AesKey(ByteUtil.randomBytes(16));
+									 JsonWebEncryption jwe = new JsonWebEncryption();
+									 jwe.setPayload(clientsPublicKey.toJson(OutputControlLevel.INCLUDE_PRIVATE));
+									 jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.A128KW);
+									 jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256);
+									 jwe.setKey(key);
+									 String serializedJwe = jwe.getCompactSerialization();
+
+									 logger.error("Serialized Encrypted JWE: " + serializedJwe);
+
+									 response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), serializedJwe);
+								}
 		        				
 		        				// TODO: make it possible to also return CBOR 
 		        				String json = response.getJSON();
@@ -133,7 +156,6 @@ public class AuthorizationServer extends CoapServer {
 		    	                exchange.respond(json);
 
 							} catch (Exception e1) {
-		        				// could not generate keys
 								logger.error("Could not generate token." + e1.getMessage());
 								e1.printStackTrace();
 				        		exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, ErrorResponse.getInternalServerError());
