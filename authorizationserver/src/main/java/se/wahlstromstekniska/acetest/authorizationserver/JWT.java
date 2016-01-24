@@ -1,5 +1,7 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
+import java.util.Date;
+
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
@@ -9,14 +11,19 @@ import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public String generateJWT(EllipticCurveJsonWebKey signingKey, String aud, JsonWebKey clientsPublicKey) throws Exception {
+	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, JsonWebKey clientsPublicKey) throws Exception {
 
+		AccessToken token = new AccessToken();
+		token.setAudience(aud);
+		
 	    // add the claims for aud, issuedAt
 	    JwtClaims claims = new JwtClaims();
 	    claims.setAudience(aud); // to whom the token is intended to be sent
 	    claims.setGeneratedJwtId(); // a unique identifier for the token
 	    claims.setIssuedAtToNow();  // when the token was issued/created (now)
-
+	    
+	    token.setIssuedAt(new Date(claims.getIssuedAt().getValue()));
+	    
 	    JsonWebSignature jws = new JsonWebSignature();
 
 	    String claimsJson = claims.toJson();
@@ -41,8 +48,12 @@ public class JWT {
 	    // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
 	    jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
 
-	    // Sign and return the JWS
-	    return jws.getCompactSerialization();
+	    // Sign
+	    String tokenStr = jws.getCompactSerialization();
+	    
+	    token.setAccessToken(tokenStr);
+
+	    return token;
 	}
 	
 	

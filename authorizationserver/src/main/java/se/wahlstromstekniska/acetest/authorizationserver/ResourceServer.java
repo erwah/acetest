@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class ResourceServer {
 
 	private String aud;
-	private ArrayList<Object> accessTokens = new ArrayList<Object>();
+	private ArrayList<AccessToken> accessTokens = new ArrayList<AccessToken>();
 	private ArrayList<String> authorizedClients = new ArrayList<String>();
 	private String csp;
 
@@ -47,22 +47,22 @@ public class ResourceServer {
 		this.csp = csp;
 	}
 	
-	public void addAccessToken(Object token) {
+	public void addAccessToken(AccessToken token) {
 		accessTokens.add(token);
 	}
 	
-	public void removeAccessToken(Object token) {
+	public void removeAccessToken(AccessToken token) {
 		accessTokens.remove(token);
 	}
 	
-	public boolean validateToken(Object token) {
-		if(accessTokens.contains(token)) {
-			// TODO: validate validity time, signature....
-			return true;
+	public boolean validateToken(String token) {
+		boolean validity = false;
+		for (AccessToken t : accessTokens) {
+			if(t.getAccessToken().equals(token)) {
+				validity = true;
+			}
 		}
-		else {
-			return false;
-		}
+		return validity;
 	}
 
 	@Override

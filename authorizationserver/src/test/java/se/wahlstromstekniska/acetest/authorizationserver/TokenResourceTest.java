@@ -1,0 +1,194 @@
+package se.wahlstromstekniska.acetest.authorizationserver;
+
+import java.net.SocketException;
+
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
+import org.jose4j.jwk.EcJwkGenerator;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.EllipticCurves;
+import org.jose4j.lang.JoseException;
+import org.json.JSONException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
+import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResponse;
+
+public class TokenResourceTest {
+	public static final String TOKEN = "token";
+	
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
+	
+	private int serverPort = AuthorizationServer.COAP_PORT;
+			
+    AuthorizationServer server;
+
+	@Before
+	public void startupServer() throws Exception {
+		try {
+			server = new AuthorizationServer();
+	        server.addEndpoints();
+	        server.start();
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@After
+	public void shutdownServer() {
+		try {
+			server.stop();
+			server.destroy();
+			server = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testSuccess() throws Exception {
+		Request request = Request.newPost();
+		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
+
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+
+		request.setPayload(req.toJson());
+		Response response = request.send().waitForResponse();
+
+		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
+		
+		validateToken(response.getPayload(), "tempSensorInLivingRoom");
+	}
+
+	@Test
+	public void testSuccessClientGeneratedKeys() throws Exception {
+
+		JsonWebKey jwk;
+		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+		jwk.setKeyId("testkid");
+		
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+		req.setKey(jwk);
+
+		Request request = Request.newPost();
+		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
+		request.setPayload(req.toJson());
+		Response response = request.send().waitForResponse();
+	
+		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
+
+		validateToken(response.getPayload(), "tempSensorInLivingRoom");
+	}
+
+	@Test
+	public void testWrongClient() throws Exception {
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("notmyclient");
+		req.setClientSecret("qwerty");
+		callBadRequestEndpointCall(req.toJson(), "unauthorized_client");
+	}	
+
+	@Test
+	public void testWrongSecret() throws Exception {
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("wrongpassword");
+		callBadRequestEndpointCall(req.toJson(), "unauthorized_client");
+	}	
+
+	@Test
+	public void testWrongAud() throws Exception {
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("wrongaud");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+		callBadRequestEndpointCall(req.toJson(), "unauthorized_client");
+	}	
+
+	@Test
+	public void testWrongGrant() throws Exception {
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("notValidGrant");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+		callBadRequestEndpointCall(req.toJson(), "invalid_grant");
+	}	
+	
+	@Test
+	public void testMissingAud() throws Exception {
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+		callBadRequestEndpointCall(req.toJson(), "invalid_request");
+	}	
+
+	@Test
+	public void testMissingGrantType() throws Exception {
+		TokenRequest req = new TokenRequest();
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+		callBadRequestEndpointCall(req.toJson(), "invalid_request");
+	}	
+
+	private void validateToken(byte[] payload, String aud) throws MalformedClaimException, JSONException, JoseException {
+		TokenResponse tokenResponse = new TokenResponse(payload);
+		
+	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+	        .setAllowedClockSkewInSeconds(30)
+	        .setExpectedAudience(aud)
+	        .setVerificationKey(config.getAuthorizationServerKey().getPublicKey())
+	        .build();
+
+		try
+		{
+		    //  Validate the JWT and process it to the Claims
+		    JwtClaims jwtClaims = jwtConsumer.processToClaims(tokenResponse.getAccessToken());
+		    
+		    Assert.assertTrue(jwtClaims.getAudience().contains(aud));
+		}
+		catch (InvalidJwtException e)
+		{
+			Assert.fail("Could not validate token.");
+		}
+	}
+
+	private void callBadRequestEndpointCall(String payload, String expectedError) throws Exception {
+		Request request = Request.newPost();
+		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
+		request.setPayload(payload);
+		Response response = request.send().waitForResponse();
+
+		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
+		
+    	// take request and turn it into a TokenRequest object
+    	byte[] error = response.getPayload();
+    	ErrorResponse errorResp = new ErrorResponse(error);
+    	Assert.assertEquals(expectedError, errorResp.getError());
+	}
+
+}

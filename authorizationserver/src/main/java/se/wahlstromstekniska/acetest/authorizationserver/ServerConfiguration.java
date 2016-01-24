@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.jose4j.json.internal.json_simple.parser.ParseException;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
-import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.keys.EllipticCurves;
 import org.jose4j.lang.JoseException;
@@ -135,6 +134,10 @@ public class ServerConfiguration {
 			}
 		}
 		return foundRS;
+	}
+
+	public ArrayList<ResourceServer> getResourceServers() {
+		return resourceServers;
 	}
 
 	private EllipticCurveJsonWebKey generateKey(String kid) throws JoseException {

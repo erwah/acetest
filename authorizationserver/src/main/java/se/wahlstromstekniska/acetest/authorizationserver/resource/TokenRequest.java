@@ -1,4 +1,4 @@
-package se.wahlstromstekniska.acetest.authorizationserver;
+package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
 import java.nio.charset.StandardCharsets;
 
@@ -7,6 +7,9 @@ import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import se.wahlstromstekniska.acetest.authorizationserver.Constants;
+import se.wahlstromstekniska.acetest.authorizationserver.exception.RequestException;
 
 /**
  * Parses a TokenReques, JSON or CBOR and expose getters for all values.
@@ -43,22 +46,32 @@ public class TokenRequest {
 		}
 	}
 
-	public boolean validateRequest() {
+	public TokenRequest() {
+	}
+
+	public boolean validateRequest() throws RequestException {
 		boolean valid = false;
+		
 		if(aud != null 
 				&& aud.trim().length() != 0 
 				&& grant_type != null 
-				&& grant_type.equals(Constants.grantTypeClientCreds)
+				&& grant_type.trim().length() != 0
 				&& client_id != null 
 				&& client_id.trim().length() != 0
 				&& client_secret != null 
 				&& client_secret.trim().length() != 0) {
+
+			// throw special exception if the grant type is not valid.
+			if(!grant_type.equals(Constants.grantTypeClientCreds)) {
+				throw new RequestException("No valid grant_type.", RequestException.MISSING_GRANT);
+			}
+
 			valid = true;
 		}
 		return valid;
 	}
 	
-	public String getGrantType() {
+	public String getGrant_type() {
 		return grant_type;
 	}
 
@@ -74,7 +87,7 @@ public class TokenRequest {
 		this.aud = aud;
 	}
 
-	public String getClientID() {
+	public String getClient_id() {
 		return client_id;
 	}
 
@@ -82,7 +95,7 @@ public class TokenRequest {
 		this.client_id = client_id;
 	}
 
-	public String getClientSecret() {
+	public String getClient_secret() {
 		return client_secret;
 	}
 
@@ -97,10 +110,31 @@ public class TokenRequest {
 				+ client_secret + ", key (public only)=" + key.toJson(OutputControlLevel.PUBLIC_ONLY) + "]";
 	}
 
-	public JsonWebKey getKey() {
+	public String toJson() {
+		
+		String json = "{"
+	     + "  \"grant_type\" : \"" + grant_type + "\","
+	     + "  \"aud\" : \"" + aud + "\",";
+		
+		if(key != null) {
+		     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
+		}
+		
+		json += "  \"client_id\" : \"" + client_id + "\","
+	     + "  \"client_secret\" : \"" + client_secret + "\""
+	   	 + "}";
+
+		return json;
+	}
+
+	public JsonWebKey getRawKey() {
 		return key;
 	}
 
+	public String getKey() {
+		return key.toJson(OutputControlLevel.PUBLIC_ONLY);
+	}
+	
 	public void setKey(JsonWebKey key) {
 		this.key = key;
 	}
