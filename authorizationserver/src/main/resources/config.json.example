@@ -1,0 +1,34 @@
+{
+	"server" : {
+		"coapPort": 5683,
+		"coapsPort" : 5684,
+		"trustStoreLocation" : "../certs/trustStore.jks",
+		"trustStorePassword" : "XXX",
+		"keyStoreLocation" : "../certs/keyStore.jks",
+		"keyStorePassword" : "XXX",
+		"psk" : "XXX",
+		"signAndEncryptKey" : null
+	},
+	"clients" : [
+		{
+			"clientId":"testclient1",
+			"clientSecret" : "testpassword1"
+		},
+		{
+			"clientId":"testclient2",
+			"clientSecret" : "testpassword2"
+		}
+	],
+	"resourceservers" : [
+		{
+			"aud":"testRS1",
+			"csp" : "DLTS",
+			"authorizedClients" : ["testclient1", "testclient2" ]
+		},
+		{
+			"aud":"testRS2",
+			"csp" : "OBJECTSECURITY",
+			"authorizedClients" : ["testclient1" ]
+		}
+	]
+}
