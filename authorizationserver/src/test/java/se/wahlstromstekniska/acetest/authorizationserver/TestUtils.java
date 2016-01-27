@@ -22,7 +22,7 @@ public class TestUtils {
 	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
 	        .setAllowedClockSkewInSeconds(30)
 	        .setExpectedAudience(aud)
-	        .setVerificationKey(config.getAuthorizationServerKey().getPublicKey())
+	        .setVerificationKey(config.getSignAndEncryptKey().getPublicKey())
 	        .build();
 
 		try

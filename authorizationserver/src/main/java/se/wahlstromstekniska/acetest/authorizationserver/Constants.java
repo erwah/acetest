@@ -8,4 +8,8 @@ public class Constants {
 	
 	public static String tokenTypePOP = "pop";
 
+	public static final String TOKEN_RESOURCE = "token";
+
+	public static final String INSTROSPECTION_RESOURCE = "introspect";
+
 }

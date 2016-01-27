@@ -96,7 +96,7 @@ public class TokenResource extends CoapResource {
 									clientsPublicKey.setKeyId("asgeneratedKey");
 								}
 	
-								AccessToken token = jwt.generateJWT(config.getAuthorizationServerKey(), rs.getAud(), clientsPublicKey);
+								AccessToken token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), clientsPublicKey);
 		        				
 								TokenResponse response = null;
 								if(tokenRequest.getRawKey() != null) {

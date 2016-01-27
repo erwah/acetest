@@ -14,8 +14,8 @@ import org.junit.Test;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
 
 public class TokenResourceTest {
-	public static final String TOKEN = "token";
 
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
 
 	@Before
 	public void startupServer() throws Exception {
@@ -36,7 +36,7 @@ public class TokenResourceTest {
 	@Test
 	public void testSuccessPlaintext() throws Exception {
 		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+CoAPAuthorizationServer.COAP_PORT+"/"+TOKEN);
+		request.setURI("coap://localhost:"+config.getCoapPort()+"/"+Constants.TOKEN_RESOURCE);
 
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
@@ -61,7 +61,7 @@ public class TokenResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
 
 		System.out.println(response);
 		System.out.println("Time elapsed (ms): " + response.getRTT());
@@ -83,7 +83,7 @@ public class TokenResourceTest {
 		req.setClientSecret("qwerty");
 		req.setKey(jwk);
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
 
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
 
@@ -151,7 +151,7 @@ public class TokenResourceTest {
 
 	private void callBadRequestEndpointCall(String payload, String expectedError) throws Exception {
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", payload, MediaTypeRegistry.TEXT_PLAIN);		
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", payload, MediaTypeRegistry.TEXT_PLAIN);
 		
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 		

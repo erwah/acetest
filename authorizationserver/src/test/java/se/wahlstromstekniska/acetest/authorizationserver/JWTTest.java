@@ -25,7 +25,7 @@ public class JWTTest {
 		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
 		jwk.setKeyId("testkid");
 
-		token = jwt.generateJWT(config.getAuthorizationServerKey(), "myAud", jwk);
+		token = jwt.generateJWT(config.getSignAndEncryptKey(), "myAud", jwk);
 	}
 	
 	@Test
@@ -36,7 +36,7 @@ public class JWTTest {
 	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
 	        .setAllowedClockSkewInSeconds(30)
 	        .setExpectedAudience("myAud")
-	        .setVerificationKey(config.getAuthorizationServerKey().getPublicKey())
+	        .setVerificationKey(config.getSignAndEncryptKey().getPublicKey())
 	        .build();
 
 		try
@@ -62,7 +62,7 @@ public class JWTTest {
 	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
 	        .setAllowedClockSkewInSeconds(30)
 	        .setExpectedAudience("wrongAud")
-	        .setVerificationKey(config.getAuthorizationServerKey().getPublicKey())
+	        .setVerificationKey(config.getSignAndEncryptKey().getPublicKey())
 	        .build();
 
 	    //  Validate the JWT and process it to the Claims

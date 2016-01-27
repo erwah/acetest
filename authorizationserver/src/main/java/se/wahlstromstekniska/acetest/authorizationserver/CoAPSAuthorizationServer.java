@@ -24,16 +24,15 @@ import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResource;
 
 
 public class CoAPSAuthorizationServer extends CoapServer {
-	// allows configuration via Californium.properties
-//	protected static final int COAPS_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_SECURE_PORT);
-	protected static final int COAPS_PORT = 5685;
-	
+
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
+
+	final static Logger logger = Logger.getLogger(CoAPAuthorizationServer.class);
+
 	private static final String TRUST_STORE_PASSWORD = "rootPass";
 	private static final String KEY_STORE_PASSWORD = "endPass";
 	private static final String KEY_STORE_LOCATION = "../certs/keyStore.jks";
 	private static final String TRUST_STORE_LOCATION = "../certs/trustStore.jks";
-
-	final static Logger logger = Logger.getLogger(CoAPAuthorizationServer.class);
 
     static CoAPSAuthorizationServer server = null;
 
@@ -44,7 +43,6 @@ public class CoAPSAuthorizationServer extends CoapServer {
 
 
 	public static void main(String[] args) {
-
         try {
             logger.info("Starting server.");
             server = new CoAPSAuthorizationServer();
@@ -52,7 +50,6 @@ public class CoAPSAuthorizationServer extends CoapServer {
         } catch (Exception e) {
             System.err.println("Failed to initialize server: " + e.getMessage());
         }
-
 	}
 	
     public CoAPSAuthorizationServer() throws Exception {
@@ -61,28 +58,30 @@ public class CoAPSAuthorizationServer extends CoapServer {
         add(new IntrospectResource());
 
 	    InMemoryPskStore pskStore = new InMemoryPskStore();
-	    pskStore.setKey("Client_identity", "secretPSK".getBytes());
+	    pskStore.setKey("Client_identity", config.getPsk().getBytes());
 	    
 		InputStream in = null;
 
 		// load the key store
 		KeyStore keyStore = KeyStore.getInstance("JKS");
-		in = new FileInputStream(KEY_STORE_LOCATION);
-		keyStore.load(in, KEY_STORE_PASSWORD.toCharArray());
+		in = new FileInputStream(config.getKeyStoreLocation());
+		keyStore.load(in, config.getKeyStorePassword().toCharArray());
 
+		
 		// load the trust store
 		KeyStore trustStore = KeyStore.getInstance("JKS");
-		InputStream inTrust = new FileInputStream(TRUST_STORE_LOCATION);
-		trustStore.load(inTrust, TRUST_STORE_PASSWORD.toCharArray());
+		InputStream inTrust = new FileInputStream(config.getTrustStoreLocation());
+		trustStore.load(inTrust, config.getTrustStorePassword().toCharArray());
 
+		
 		// You can load multiple certificates if needed
 		Certificate[] trustedCertificates = new Certificate[1];
 		trustedCertificates[0] = trustStore.getCertificate("root");
 
 
-		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(COAPS_PORT));
+		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(config.getCoapsPort()));
 		builder.setPskStore(pskStore);
-		builder.setIdentity((PrivateKey)keyStore.getKey("server", KEY_STORE_PASSWORD.toCharArray()), keyStore.getCertificateChain("server"), true);
+		builder.setIdentity((PrivateKey)keyStore.getKey("server", config.getKeyStorePassword().toCharArray()), keyStore.getCertificateChain("server"), true);
 		builder.setTrustStore(trustedCertificates);
 		
 		
@@ -95,7 +94,7 @@ public class CoAPSAuthorizationServer extends CoapServer {
 				addEndpoint(endpoint);
 				// TODO: make sure this was placed correctly
 				EndpointManager.getEndpointManager().setDefaultSecureEndpoint(endpoint);
-	            logger.info("Bound CoAPS server to " + addr + " and port " + COAPS_PORT);
+	            logger.info("Bound CoAPS server to " + addr + " and port " + config.getCoapsPort());
 			}
 		}
     }

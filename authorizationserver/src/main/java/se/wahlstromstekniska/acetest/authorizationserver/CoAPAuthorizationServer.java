@@ -8,19 +8,14 @@ import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 
-import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResource;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.IntrospectResource;
+import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResource;
 
 
 public class CoAPAuthorizationServer extends CoapServer {
 
-	protected static final int COAP_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_PORT);
-
 	final static Logger logger = Logger.getLogger(CoAPAuthorizationServer.class);
-	
-	@SuppressWarnings("unused")
 	private static ServerConfiguration config = ServerConfiguration.getInstance();
 	
 	static CoAPAuthorizationServer server = null;
@@ -45,9 +40,9 @@ public class CoAPAuthorizationServer extends CoapServer {
     	for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
     		// only binds to IPv4 addresses and localhost
 			if (addr instanceof Inet4Address || addr.isLoopbackAddress()) {
-				InetSocketAddress bindToAddress = new InetSocketAddress(addr, COAP_PORT);
+				InetSocketAddress bindToAddress = new InetSocketAddress(addr, config.getCoapPort());
 				addEndpoint(new CoapEndpoint(bindToAddress));
-	            logger.info("Bound CoAP server to " + addr + " and port " + COAP_PORT);
+	            logger.info("Bound CoAP server to " + addr + " and port " + config.getCoapPort());
 			}
 		}
 

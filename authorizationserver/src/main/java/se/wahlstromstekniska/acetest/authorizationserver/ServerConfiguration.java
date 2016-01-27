@@ -1,17 +1,12 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.jose4j.json.internal.json_simple.parser.ParseException;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
@@ -34,82 +29,115 @@ public class ServerConfiguration {
 
 	private static ServerConfiguration instance = null;
 	private static JSONObject properties = null;
-	private static EllipticCurveJsonWebKey authorizationServerKey = null;
 	
 	private ArrayList<ResourceServer> resourceServers = new ArrayList<ResourceServer>();
 	private ArrayList<ClientCredentials> clients = new ArrayList<ClientCredentials>();
+	private int coapPort = 5683;
+	private int coapsPort = 5684;
 	
+	private String trustStorePassword = null;
+	private String trustStoreLocation = null;
 
+	private String keyStorePassword = null;
+	private String keyStoreLocation = null;
+
+	private String psk = null;
 	
-	protected ServerConfiguration() throws IOException, JoseException, ParseException {
-
-		logger.info("Loading authorization server configuration.");
-		InputStream configIS = ServerConfiguration.class.getResourceAsStream("/config.json");
-		StringWriter configWriter = new StringWriter();
-		IOUtils.copy(configIS,  configWriter, "UTF-8");
-		setProperties(new JSONObject(configWriter.toString()));
-		
-		// TODO: validate config
+	private EllipticCurveJsonWebKey signAndEncryptKey = null;
+	
+	private String configFilePath = "/config.json";
+	
+	protected ServerConfiguration() {
 
 		try {
 			
-	    	logger.info("Loading authorization server keys.");
-			InputStream keyIS = new FileInputStream(new File("authorizationserver.key"));
-			StringWriter keyWriter = new StringWriter();
-			IOUtils.copy(keyIS,  keyWriter, "UTF-8");
+			logger.info("Loading authorization server configuration.");
+			InputStream configIS = ServerConfiguration.class.getResourceAsStream(configFilePath);
+			StringWriter configWriter = new StringWriter();
+			IOUtils.copy(configIS,  configWriter, "UTF-8");
+			setProperties(new JSONObject(configWriter.toString()));
 			
-			JSONObject jsonKey = new JSONObject(keyWriter.toString());
-			authorizationServerKey = (EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(jsonKey.toString());
-			
-			// TODO: validate key format
+			// TODO: validate config
 
+			// load resource servers
+	    	logger.info("Loading configured resource servers.");
+
+	    	JSONArray rsList = getProperties().getJSONArray("resourceservers");
+	    	for (int i=0; i<rsList.length(); i++) {
+	    	    JSONObject item = rsList.getJSONObject(i);
+
+	    	    String aud = item.getString("aud");
+	            ResourceServer rs = new ResourceServer(aud);
+
+	    	    String csp = item.getString("csp");
+	            rs.setCsp(csp);
+
+	    	    JSONArray authorizedClients = item.getJSONArray("authorizedClients");
+	        	for (int c=0; c<authorizedClients.length(); c++) {
+	        	    String client = authorizedClients.getString(c);
+	                rs.addAuthorizedClient(client);
+	        	}
+	        	
+	            resourceServers.add(rs);
+	    	}
+	    	
+	    	// load clients
+	    	logger.info("Loading configured clients.");
+	        
+	    	JSONArray clientList = getProperties().getJSONArray("clients");
+	    	for (int i=0; i<clientList.length(); i++) {
+	    	    JSONObject item = clientList.getJSONObject(i);
+	    	    String clientID = item.getString("clientId");
+	    	    String clientSecret = item.getString("clientSecret");
+
+	    	    clients.add(new ClientCredentials(clientID, clientSecret));
+	    	}
+	    	
+	    	// load port(s) config
+	    	logger.info("Loading ports resource servers.");
+	    	setCoapPort(getProperties().getJSONObject("server").getInt("coapPort"));
+	    	setCoapsPort(getProperties().getJSONObject("server").getInt("coapsPort"));
+
+	    	// load trust store
+	    	logger.info("Loading trust store information.");
+	    	setTrustStoreLocation(getProperties().getJSONObject("server").getString("trustStoreLocation"));
+	    	setTrustStorePassword(getProperties().getJSONObject("server").getString("trustStorePassword"));
+
+	    	// load key store
+	    	logger.info("Loading key store information.");
+	    	setKeyStoreLocation(getProperties().getJSONObject("server").getString("keyStoreLocation"));
+	    	setKeyStorePassword(getProperties().getJSONObject("server").getString("keyStorePassword"));
+
+	    	// load psk
+	    	logger.info("Loading PSK.");
+	    	setPsk(getProperties().getJSONObject("server").getString("psk"));
+
+	    	// load sign and encryption key
+	    	logger.info("Loading sign and encryption key.");
+	    	String key = getProperties().getJSONObject("server").getJSONObject("signAndEncryptKey").toString();
+    		setSignAndEncryptKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 		} catch (Exception e) {
-			logger.info("No keys found for authorization server. Generating keys...");
-			EllipticCurveJsonWebKey jwk = generateKey("AS signing key");
+			logger.info("Failed to parse configuration file: " + configFilePath);
+			EllipticCurveJsonWebKey jwk;
+			try {
+				jwk = generateKey("AS signing key");
+				String keyStr = jwk.toJson(OutputControlLevel.INCLUDE_PRIVATE);
+				logger.info("Example key object to copy into the server.signAndEncryptKey property: " + keyStr);
+			} catch (JoseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			
-			String keyStr = jwk.toJson(OutputControlLevel.INCLUDE_PRIVATE);
-			PrintWriter keyFileWriter = new PrintWriter("authorizationserver.key", "UTF-8");
-			keyFileWriter.println(keyStr);
-			keyFileWriter.close();
-			
-			// only adding if successfully written to disk
-			authorizationServerKey = jwk;
+			logger.info("Shutting down server. Make sure to add a sign and encryption key to the config.json file.");
+
+			System.exit(0);
+
+			logger.info("Shutting down...");
+			e.printStackTrace();
+			System.exit(0);
 		}
-		
-		// load resource servers
-    	logger.info("Loading configured resource servers.");
-
-    	JSONArray rsList = getProperties().getJSONArray("resourceservers");
-    	for (int i=0; i<rsList.length(); i++) {
-    	    JSONObject item = rsList.getJSONObject(i);
-
-    	    String aud = item.getString("aud");
-            ResourceServer rs = new ResourceServer(aud);
-
-    	    String csp = item.getString("csp");
-            rs.setCsp(csp);
-
-    	    JSONArray authorizedClients = item.getJSONArray("authorizedClients");
-        	for (int c=0; c<authorizedClients.length(); c++) {
-        	    String client = authorizedClients.getString(c);
-                rs.addAuthorizedClient(client);
-        	}
-        	
-            resourceServers.add(rs);
-    	}
+ 
     	
-    	// load clients
-    	logger.info("Loading configured clients.");
-        
-    	JSONArray clientList = getProperties().getJSONArray("clients");
-    	for (int i=0; i<clientList.length(); i++) {
-    	    JSONObject item = clientList.getJSONObject(i);
-    	    String clientID = item.getString("client_id");
-    	    String clientSecret = item.getString("client_secret");
-
-    	    clients.add(new ClientCredentials(clientID, clientSecret));
-    	}
-
 	}
 	
 	public static ServerConfiguration getInstance() {
@@ -165,8 +193,68 @@ public class ServerConfiguration {
 		ServerConfiguration.properties = properties;
 	}
 
-	public EllipticCurveJsonWebKey getAuthorizationServerKey() {
-		return authorizationServerKey;
+	public int getCoapPort() {
+		return coapPort;
+	}
+
+	public void setCoapPort(int coapPort) {
+		this.coapPort = coapPort;
+	}
+
+	public int getCoapsPort() {
+		return coapsPort;
+	}
+
+	public void setCoapsPort(int coapsPort) {
+		this.coapsPort = coapsPort;
+	}
+
+	public String getTrustStorePassword() {
+		return trustStorePassword;
+	}
+
+	public void setTrustStorePassword(String trustStorePassword) {
+		this.trustStorePassword = trustStorePassword;
+	}
+
+	public String getTrustStoreLocation() {
+		return trustStoreLocation;
+	}
+
+	public void setTrustStoreLocation(String trustStoreLocation) {
+		this.trustStoreLocation = trustStoreLocation;
+	}
+
+	public String getKeyStorePassword() {
+		return keyStorePassword;
+	}
+
+	public void setKeyStorePassword(String keyStorePassword) {
+		this.keyStorePassword = keyStorePassword;
+	}
+
+	public String getKeyStoreLocation() {
+		return keyStoreLocation;
+	}
+
+	public void setKeyStoreLocation(String keyStoreLocation) {
+		this.keyStoreLocation = keyStoreLocation;
+	}
+
+	public String getPsk() {
+		return psk;
+	}
+
+	public void setPsk(String psk) {
+		this.psk = psk;
+	}
+
+	public EllipticCurveJsonWebKey getSignAndEncryptKey() {
+		return signAndEncryptKey;
+	}
+
+	public void setSignAndEncryptKey(EllipticCurveJsonWebKey signAndEncryptKey) {
+		this.signAndEncryptKey = signAndEncryptKey;
 	}
 	
 }
