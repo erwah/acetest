@@ -1,6 +1,5 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -60,8 +59,7 @@ public class DTLSRequest {
 
 		DTLSConnector dtlsconnector = new DTLSConnector(builder.build(), null);
 
-		// TODO: replace with just resetting ports?
-		NetworkConfig nc = NetworkConfig.createStandardWithFile(new File("../eriksnetworks.txt"));
+		NetworkConfig nc = NetworkConfig.getStandard().setInt("COAP_SECURE_PORT", 15684);
 
 		dtlsEndpoint = new CoapEndpoint(dtlsconnector, nc);
 		dtlsEndpoint.start();

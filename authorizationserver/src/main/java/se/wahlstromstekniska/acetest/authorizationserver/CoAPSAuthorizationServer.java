@@ -83,6 +83,7 @@ public class CoAPSAuthorizationServer extends CoapServer {
     	for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
     		// only binds to IPv4 addresses and localhost
 			if (addr instanceof Inet4Address || addr.isLoopbackAddress()) {
+				@SuppressWarnings("static-access")
 				CoapEndpoint endpoint = new CoapEndpoint(connector, new NetworkConfig().getStandard()); 
 				addEndpoint(endpoint);
 				// TODO: make sure this was placed correctly
