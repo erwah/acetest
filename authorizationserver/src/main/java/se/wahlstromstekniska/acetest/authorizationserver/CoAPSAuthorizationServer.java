@@ -29,11 +29,6 @@ public class CoAPSAuthorizationServer extends CoapServer {
 
 	final static Logger logger = Logger.getLogger(CoAPAuthorizationServer.class);
 
-	private static final String TRUST_STORE_PASSWORD = "rootPass";
-	private static final String KEY_STORE_PASSWORD = "endPass";
-	private static final String KEY_STORE_LOCATION = "../certs/keyStore.jks";
-	private static final String TRUST_STORE_LOCATION = "../certs/trustStore.jks";
-
     static CoAPSAuthorizationServer server = null;
 
 	static {
@@ -67,12 +62,10 @@ public class CoAPSAuthorizationServer extends CoapServer {
 		in = new FileInputStream(config.getKeyStoreLocation());
 		keyStore.load(in, config.getKeyStorePassword().toCharArray());
 
-		
 		// load the trust store
 		KeyStore trustStore = KeyStore.getInstance("JKS");
 		InputStream inTrust = new FileInputStream(config.getTrustStoreLocation());
 		trustStore.load(inTrust, config.getTrustStorePassword().toCharArray());
-
 		
 		// You can load multiple certificates if needed
 		Certificate[] trustedCertificates = new Certificate[1];
