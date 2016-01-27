@@ -3,6 +3,7 @@ package se.wahlstromstekniska.acetest.authorizationserver;
 import java.net.SocketException;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwk.EcJwkGenerator;
@@ -19,78 +20,101 @@ import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResponse;
 
 public class IntrospectResourceTest {
+	public static final String TOKEN = "token";
 	public static final String INTROSPECT = "introspect";
-	
-	@SuppressWarnings("unused")
-	private static ServerConfiguration config = ServerConfiguration.getInstance();
-	
-	private int serverPort = AuthorizationServer.COAP_PORT;
-			
-    AuthorizationServer server;
 
 	@Before
 	public void startupServer() throws Exception {
 		try {
-			server = new AuthorizationServer();
-	        server.addEndpoints();
-	        server.start();
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@After
-	public void shutdownServer() {
-		try {
-			server.stop();
-			server.destroy();
-			server = null;
+			// DTLS protected CoAP Server
+	        CoAPSAuthorizationServer.main(new String[] {});
+	        
+	        // Unprotected CoAP Server
+	        CoAPAuthorizationServer.main(new String[] {});
+	        
+			System.out.println("OAuth2 AS is started successfully.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+
 	@Test
 	public void testSuccess() throws Exception {
+		// first create a token
+		JsonWebKey jwk;
+		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+		jwk.setKeyId("testkid");
+		
+		TokenRequest createReq = new TokenRequest();
+		createReq.setGrantType("client_credentials");
+		createReq.setAud("tempSensorInLivingRoom");
+		createReq.setClientID("myclient");
+		createReq.setClientSecret("qwerty");
+		createReq.setKey(jwk);
+
+		Response createResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", createReq.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
+		Assert.assertEquals(ResponseCode.CONTENT, createResponse.getCode());
+		
+		TokenResponse tokenResponse = new TokenResponse(createResponse.getPayload());
+		
+		// see of token is valid 
+		IntrospectRequest introspectionReq = new IntrospectRequest();
+		introspectionReq.setToken(tokenResponse.getAccessToken());
+		introspectionReq.setClientID("myclient");
+		introspectionReq.setClientSecret("qwerty");
+		
+		Response introspectionResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+INTROSPECT, "POST", introspectionReq.toJson(), MediaTypeRegistry.TEXT_PLAIN);	
+
+		Assert.assertEquals(introspectionResponse.getCode(), ResponseCode.CONTENT);
+
+		IntrospectResponse introspectResponse = new IntrospectResponse(introspectionResponse.getPayload());
+		Assert.assertTrue(introspectResponse.isActive());
+	}
+	
+
+	@Test
+	public void testSuccessPlaintext() throws Exception {
 
 		// first create a token
 		JsonWebKey jwk;
 		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
 		jwk.setKeyId("testkid");
 		
-		TokenRequest req = new TokenRequest();
-		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setKey(jwk);
+		TokenRequest createReq = new TokenRequest();
+		createReq.setGrantType("client_credentials");
+		createReq.setAud("tempSensorInLivingRoom");
+		createReq.setClientID("myclient");
+		createReq.setClientSecret("qwerty");
+		createReq.setKey(jwk);
+		
+		Request request = Request.newPost();
+		request.setURI("coap://localhost:"+CoAPAuthorizationServer.COAP_PORT+"/"+TOKEN);
+		request.setPayload(createReq.toJson());
+		Response createResponse = request.send().waitForResponse();
 
-		Request createRequest = Request.newPost();
-		createRequest.setURI("coap://localhost:"+serverPort+"/token");
-		createRequest.setPayload(req.toJson());
-		Response createResponse = createRequest.send().waitForResponse();
-	
 		Assert.assertEquals(ResponseCode.CONTENT, createResponse.getCode());
 		
 		TokenResponse tokenResponse = new TokenResponse(createResponse.getPayload());
 		
 		// see of token is valid 
-		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+INTROSPECT);
-		
 		IntrospectRequest introspectionReq = new IntrospectRequest();
 		introspectionReq.setToken(tokenResponse.getAccessToken());
 		introspectionReq.setClientID("myclient");
 		introspectionReq.setClientSecret("qwerty");
 		
-		request.setPayload(introspectionReq.toJson());
-		Response response = request.send().waitForResponse();
+		Request introspectionRequest = Request.newPost();
+		introspectionRequest.setURI("coap://localhost:"+CoAPAuthorizationServer.COAP_PORT+"/"+INTROSPECT);
+		introspectionRequest.setPayload(introspectionReq.toJson());
+		Response introspectionResponse = introspectionRequest.send().waitForResponse();
 
-		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
-
-		IntrospectResponse introspectResponse = new IntrospectResponse(response.getPayload());
+		Assert.assertEquals(introspectionResponse.getCode(), ResponseCode.CONTENT);
+		
+		IntrospectResponse introspectResponse = new IntrospectResponse(introspectionResponse.getPayload());
 		Assert.assertTrue(introspectResponse.isActive());
+		
 	}
+		
 
 	@Test
 	public void testWrongClient() throws Exception {
@@ -117,11 +141,7 @@ public class IntrospectResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 		
-		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+INTROSPECT);
-
-		request.setPayload(req.toJson());
-		Response response = request.send().waitForResponse();
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+INTROSPECT, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);	
 
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
 
@@ -130,10 +150,7 @@ public class IntrospectResourceTest {
 	}	
 
 	private void callBadRequestEndpointCall(String payload, String expectedError) throws Exception {
-		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+INTROSPECT);
-		request.setPayload(payload);
-		Response response = request.send().waitForResponse();
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+INTROSPECT, "POST", payload, MediaTypeRegistry.TEXT_PLAIN);
 
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 		

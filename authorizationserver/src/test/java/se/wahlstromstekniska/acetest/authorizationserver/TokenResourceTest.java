@@ -1,63 +1,42 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
-import java.net.SocketException;
-
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.jwt.MalformedClaimException;
-import org.jose4j.jwt.consumer.InvalidJwtException;
-import org.jose4j.jwt.consumer.JwtConsumer;
-import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.EllipticCurves;
-import org.jose4j.lang.JoseException;
-import org.json.JSONException;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
-import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResponse;
 
 public class TokenResourceTest {
 	public static final String TOKEN = "token";
-	
-	private static ServerConfiguration config = ServerConfiguration.getInstance();
-	
-	private int serverPort = AuthorizationServer.COAP_PORT;
-			
-    AuthorizationServer server;
+
 
 	@Before
 	public void startupServer() throws Exception {
 		try {
-			server = new AuthorizationServer();
-	        server.addEndpoints();
-	        server.start();
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@After
-	public void shutdownServer() {
-		try {
-			server.stop();
-			server.destroy();
-			server = null;
+			// DTLS protected CoAP Server
+	        CoAPSAuthorizationServer.main(new String[] {});
+	        
+	        // Unprotected CoAP Server
+	        CoAPAuthorizationServer.main(new String[] {});
+	        
+			System.out.println("OAuth2 AS is started successfully.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+
 	@Test
-	public void testSuccess() throws Exception {
+	public void testSuccessPlaintext() throws Exception {
 		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
+		request.setURI("coap://localhost:"+CoAPAuthorizationServer.COAP_PORT+"/"+TOKEN);
 
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
@@ -70,8 +49,25 @@ public class TokenResourceTest {
 
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
 		
-		validateToken(response.getPayload(), "tempSensorInLivingRoom");
+		TestUtils.validateToken(response.getPayload(), "tempSensorInLivingRoom");
 	}
+	
+	@Test
+	public void testSuccessDTLS() throws Exception {
+
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
+
+		System.out.println(response);
+		System.out.println("Time elapsed (ms): " + response.getRTT());
+		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
+	}
+	
 
 	@Test
 	public void testSuccessClientGeneratedKeys() throws Exception {
@@ -87,15 +83,13 @@ public class TokenResourceTest {
 		req.setClientSecret("qwerty");
 		req.setKey(jwk);
 
-		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
-		request.setPayload(req.toJson());
-		Response response = request.send().waitForResponse();
-	
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);		
+
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
 
-		validateToken(response.getPayload(), "tempSensorInLivingRoom");
+		TestUtils.validateToken(response.getPayload(), "tempSensorInLivingRoom");
 	}
+	
 
 	@Test
 	public void testWrongClient() throws Exception {
@@ -155,34 +149,10 @@ public class TokenResourceTest {
 		callBadRequestEndpointCall(req.toJson(), "invalid_request");
 	}	
 
-	private void validateToken(byte[] payload, String aud) throws MalformedClaimException, JSONException, JoseException {
-		TokenResponse tokenResponse = new TokenResponse(payload);
-		
-	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
-	        .setAllowedClockSkewInSeconds(30)
-	        .setExpectedAudience(aud)
-	        .setVerificationKey(config.getAuthorizationServerKey().getPublicKey())
-	        .build();
-
-		try
-		{
-		    //  Validate the JWT and process it to the Claims
-		    JwtClaims jwtClaims = jwtConsumer.processToClaims(tokenResponse.getAccessToken());
-		    
-		    Assert.assertTrue(jwtClaims.getAudience().contains(aud));
-		}
-		catch (InvalidJwtException e)
-		{
-			Assert.fail("Could not validate token.");
-		}
-	}
-
 	private void callBadRequestEndpointCall(String payload, String expectedError) throws Exception {
-		Request request = Request.newPost();
-		request.setURI("coap://localhost:"+serverPort+"/"+TOKEN);
-		request.setPayload(payload);
-		Response response = request.send().waitForResponse();
 
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+CoAPSAuthorizationServer.COAPS_PORT+"/"+TOKEN, "POST", payload, MediaTypeRegistry.TEXT_PLAIN);		
+		
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 		
     	// take request and turn it into a TokenRequest object
@@ -190,5 +160,5 @@ public class TokenResourceTest {
     	ErrorResponse errorResp = new ErrorResponse(error);
     	Assert.assertEquals(expectedError, errorResp.getError());
 	}
-
+	
 }

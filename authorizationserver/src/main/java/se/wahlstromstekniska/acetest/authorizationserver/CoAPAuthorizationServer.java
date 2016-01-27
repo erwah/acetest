@@ -14,27 +14,34 @@ import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResource;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.IntrospectResource;
 
 
-public class AuthorizationServer extends CoapServer {
+public class CoAPAuthorizationServer extends CoapServer {
 
 	protected static final int COAP_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_PORT);
 
-	final static Logger logger = Logger.getLogger(AuthorizationServer.class);
+	final static Logger logger = Logger.getLogger(CoAPAuthorizationServer.class);
 	
 	@SuppressWarnings("unused")
 	private static ServerConfiguration config = ServerConfiguration.getInstance();
 	
+	static CoAPAuthorizationServer server = null;
+	
     public static void main(String[] args) throws Exception {
         try {
             logger.info("Starting server.");
-            AuthorizationServer server = new AuthorizationServer();
-            server.addEndpoints();
-            server.start();
+            server = new CoAPAuthorizationServer();
+        	server.start();
         } catch (SocketException e) {
             System.err.println("Failed to initialize server: " + e.getMessage());
         }
     }
  
-    protected void addEndpoints() {
+    /*
+     * Constructor.
+     */
+    public CoAPAuthorizationServer() throws SocketException {
+        add(new TokenResource());
+        add(new IntrospectResource());
+ 
     	for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
     		// only binds to IPv4 addresses and localhost
 			if (addr instanceof Inet4Address || addr.isLoopbackAddress()) {
@@ -43,13 +50,6 @@ public class AuthorizationServer extends CoapServer {
 	            logger.info("Bound CoAP server to " + addr + " and port " + COAP_PORT);
 			}
 		}
-    }
 
-    /*
-     * Constructor.
-     */
-    public AuthorizationServer() throws SocketException {
-        add(new TokenResource());
-        add(new IntrospectResource());
     }
 }

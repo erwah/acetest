@@ -1,5 +1,6 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
+import org.eclipse.californium.core.coap.Request;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,5 +21,32 @@ public class Utils {
 	        }
 	    }
 	    return true;
+	}
+	
+
+	/*
+	 * Instantiates a new request based on a string describing a method.
+	 * 
+	 * @return A new request object, or null if method not recognized
+	 */
+	public static Request newRequest(String method) {
+		if (method.equalsIgnoreCase("GET")) {
+			return Request.newGet();
+		} else if (method.equalsIgnoreCase("POST")) {
+			return Request.newPost();
+		} else if (method.equalsIgnoreCase("PUT")) {
+			return Request.newPut();
+		} else if (method.equalsIgnoreCase("DELETE")) {
+			return Request.newDelete();
+		} else if (method.equalsIgnoreCase("DISCOVER")) {
+			return Request.newGet();
+		} else if (method.equalsIgnoreCase("OBSERVE")) {
+			Request request = Request.newGet();
+			request.setObserve();
+			return request;
+		} else {
+			System.err.println("Unknown method: " + method);
+			return null;
+		}
 	}
 }
