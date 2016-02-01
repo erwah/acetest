@@ -2,6 +2,7 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
 import java.nio.charset.StandardCharsets;
 
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
@@ -18,24 +19,24 @@ import se.wahlstromstekniska.acetest.authorizationserver.exception.RequestExcept
  */
 public class TokenRequest {
 	
+	private int contentFormat = MediaTypeRegistry.APPLICATION_JSON;
 	private String grant_type = "";
 	private String aud = "";
 	private String client_id = "";
 	private String client_secret = "";
+	private String scopes = "";
 	private JsonWebKey key = null;
 	
-	public TokenRequest(byte[] payload) throws JSONException, JoseException {
-		// is it JSON or CBOR?
-		// TODO: do the real check and add CBOR support
-		boolean isJSON = true;
+	public TokenRequest(byte[] payload, int contentFormat) throws Exception {
 		
-		if(isJSON) {
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
 			setGrantType(obj.getString("grant_type"));
 			setAud(obj.getString("aud"));
 			setClientID(obj.getString("client_id"));
 			setClientSecret(obj.getString("client_secret"));
+			setScopes(obj.getString("scopes"));
 			
 			// either client or AS can generate keys
 			if(obj.has("key")) {
@@ -43,6 +44,12 @@ public class TokenRequest {
 				JsonWebKey jwk = JsonWebKey.Factory.newJwk(obj.getJSONObject("key").toString());
 				setKey(jwk);
 			}
+		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			throw new Exception("CBOR not implemented yet");
+		}
+		else {
+			throw new Exception("Unknown content format.");
 		}
 	}
 
@@ -102,31 +109,7 @@ public class TokenRequest {
 	public void setClientSecret(String client_secret) {
 		this.client_secret = client_secret;
 	}
-
-	@Override
-	public String toString() {
-		return "TokenRequest [grant_type=" + grant_type + ", aud=" + aud
-				+ ", client_id=" + client_id + ", client_secret="
-				+ client_secret + ", key (public only)=" + key.toJson(OutputControlLevel.PUBLIC_ONLY) + "]";
-	}
-
-	public String toJson() {
-		
-		String json = "{"
-	     + "  \"grant_type\" : \"" + grant_type + "\","
-	     + "  \"aud\" : \"" + aud + "\",";
-		
-		if(key != null) {
-		     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
-		}
-		
-		json += "  \"client_id\" : \"" + client_id + "\","
-	     + "  \"client_secret\" : \"" + client_secret + "\""
-	   	 + "}";
-
-		return json;
-	}
-
+	
 	public JsonWebKey getRawKey() {
 		return key;
 	}
@@ -139,4 +122,47 @@ public class TokenRequest {
 		this.key = key;
 	}
 	
+	public String getScopes() {
+		return scopes;
+	}
+
+	public void setScopes(String scopes) {
+		this.scopes = scopes;
+	}
+	
+	public int getContentFormat() {
+		return contentFormat;
+	}
+
+	public void setContentFormat(int contentFormat) {
+		this.contentFormat = contentFormat;
+	}
+
+	
+	public String toJson() {
+		
+		String json = "{"
+	     + "  \"grant_type\" : \"" + grant_type + "\","
+	     + "  \"aud\" : \"" + aud + "\",";
+		
+		if(key != null) {
+		     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
+		}
+		
+		json += "  \"client_id\" : \"" + client_id + "\","
+	     + "  \"client_secret\" : \"" + client_secret + "\","
+	     + "  \"scopes\" : \"" + scopes + "\""
+	   	 + "}";
+
+		return json;
+	}
+
+	@Override
+	public String toString() {
+		return "TokenRequest [contentFormat=" + contentFormat + ", grant_type="
+				+ grant_type + ", aud=" + aud + ", client_id=" + client_id
+				+ ", client_secret=" + client_secret + ", scopes=" + scopes
+				+ ", key (public only)=" + key.toJson(OutputControlLevel.PUBLIC_ONLY) + "]";
+	}
+
 }

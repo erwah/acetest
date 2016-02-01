@@ -8,7 +8,7 @@ public class AccessToken {
 	private String audience = "";
 	private Date issuedAt = null;
 	private Date expirationTime = null;
-	
+	private String scopes = "";
 	
 	public String getAccessToken() {
 		return accessToken;
@@ -34,13 +34,18 @@ public class AccessToken {
 	public void setExpirationTime(Date expirationTime) {
 		this.expirationTime = expirationTime;
 	}
+	public String getScopes() {
+		return scopes;
+	}
+	public void setScopes(String scopes) {
+		this.scopes = scopes;
+	}
 	
 	@Override
 	public String toString() {
-		return "AccessToken [audience=" + audience + ", issuedAt=" + issuedAt + ", expirationTime="
-				+ expirationTime + ", accessToken=" + accessToken + ", ]";
+		return "AccessToken [accessToken=" + accessToken + ", audience="
+				+ audience + ", issuedAt=" + issuedAt + ", expirationTime="
+				+ expirationTime + ", scopes=" + scopes + "]";
 	}
-	
-	
 	
 }

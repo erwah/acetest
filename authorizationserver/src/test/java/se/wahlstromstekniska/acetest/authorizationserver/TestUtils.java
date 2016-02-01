@@ -16,23 +16,24 @@ public class TestUtils {
 	private static ServerConfiguration config = ServerConfiguration.getInstance();
 
 
-	public static void validateToken(byte[] payload, String aud) throws MalformedClaimException, JSONException, JoseException {
-		TokenResponse tokenResponse = new TokenResponse(payload);
-		
-	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
-	        .setAllowedClockSkewInSeconds(30)
-	        .setExpectedAudience(aud)
-	        .setVerificationKey(config.getSignAndEncryptKey().getPublicKey())
-	        .build();
+	public static void validateToken(byte[] payload, String aud, int contentFormat) throws MalformedClaimException, JSONException, JoseException {
 
 		try
 		{
+			TokenResponse tokenResponse = new TokenResponse(payload, contentFormat);
+			
+		    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+		        .setAllowedClockSkewInSeconds(30)
+		        .setExpectedAudience(aud)
+		        .setVerificationKey(config.getSignAndEncryptKey().getPublicKey())
+		        .build();
+
 		    //  Validate the JWT and process it to the Claims
 		    JwtClaims jwtClaims = jwtConsumer.processToClaims(tokenResponse.getAccessToken());
 		    
 		    Assert.assertTrue(jwtClaims.getAudience().contains(aud));
 		}
-		catch (InvalidJwtException e)
+		catch (Exception e)
 		{
 			Assert.fail("Could not validate token.");
 		}

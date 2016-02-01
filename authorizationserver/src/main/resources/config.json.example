@@ -22,13 +22,17 @@
 	"resourceservers" : [
 		{
 			"aud":"testRS1",
+			"tokenformat":"JWT",
 			"csp" : "DLTS",
-			"authorizedClients" : ["testclient1", "testclient2" ]
+			"authorizedClients" : ["testclient1", "testclient2" ],
+			"scopes" : "read write"
 		},
 		{
 			"aud":"testRS2",
+			"tokenformat":"CWT",
 			"csp" : "OBJECTSECURITY",
-			"authorizedClients" : ["testclient1" ]
+			"authorizedClients" : ["testclient1" ],
+			"scopes" : "read"
 		}
 	]
 }

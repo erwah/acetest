@@ -4,11 +4,15 @@ import java.util.ArrayList;
 
 public class ResourceServer {
 
+	public static int TOKEN_FORMAT_JWT = 0;
+	public static int TOKEN_FORMAT_CWT = 1;
+	
 	private String aud;
 	private ArrayList<AccessToken> accessTokens = new ArrayList<AccessToken>();
 	private ArrayList<String> authorizedClients = new ArrayList<String>();
 	private String csp;
-
+	private int tokenformat;
+	private String scopes = new String();
 
 	public ResourceServer(String aud) {
 		this.aud = aud;
@@ -65,11 +69,27 @@ public class ResourceServer {
 		return validity;
 	}
 
+	public int getTokenFormat() {
+		return tokenformat;
+	}
+
+	public void setTokenFormat(int tokenformat) {
+		this.tokenformat = tokenformat;
+	}
+
+	public String getScopes() {
+		return scopes;
+	}
+
+	public void setScopes(String scopes) {
+		this.scopes = scopes;
+	}
+
 	@Override
 	public String toString() {
 		return "ResourceServer [aud=" + aud + ", accessTokens=" + accessTokens
 				+ ", authorizedClients=" + authorizedClients + ", csp=" + csp
-				+ "]";
+				+ ", tokenformat=" + tokenformat + ", scopes=" + scopes + "]";
 	}
 	
 

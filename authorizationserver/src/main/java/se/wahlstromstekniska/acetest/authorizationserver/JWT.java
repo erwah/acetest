@@ -11,10 +11,11 @@ import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, JsonWebKey clientsPublicKey) throws Exception {
+	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey clientsPublicKey) throws Exception {
 
 		AccessToken token = new AccessToken();
 		token.setAudience(aud);
+		token.setScopes(scopes);
 		
 	    // add the claims for aud, issuedAt
 	    JwtClaims claims = new JwtClaims();

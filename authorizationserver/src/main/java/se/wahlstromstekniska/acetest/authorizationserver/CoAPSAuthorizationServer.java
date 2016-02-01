@@ -33,7 +33,7 @@ public class CoAPSAuthorizationServer extends CoapServer {
 
 	static {
 		ScandiumLogger.initialize();
-		ScandiumLogger.setLevel(Level.FINE);
+		ScandiumLogger.setLevel(Level.INFO);
 	}
 
 

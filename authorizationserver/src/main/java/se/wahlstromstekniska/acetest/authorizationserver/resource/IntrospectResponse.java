@@ -2,6 +2,7 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
 import java.nio.charset.StandardCharsets;
 
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,30 +28,34 @@ public class IntrospectResponse {
 	private String iss = "";
 	private String cti = "";
 	
-	
 	public IntrospectResponse(boolean active) {
 		this.active = active;
 	}
 
-	public IntrospectResponse(byte[] payload) throws JSONException, JoseException {
-		// is it JSON or CBOR?
-		// TODO: do the real check and add CBOR support
-		boolean isJSON = true;
-		
-		if(isJSON) {
+	public IntrospectResponse(byte[] payload, int contentFormat) throws Exception {
+
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
 			setActive(obj.getBoolean("active"));
 		}
+		else {
+			throw new Exception("Not implemented yet");
+		}
 	}
 	
-	public String toJSON() {
+	public byte[] toPayload(int contentFormat) {
 
-		String json = "{ "
-				+ "\n\t\"active\" : " + active
-				+ "\n}";
-		
-		return json;
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
+			String json = "{ "
+					+ "\n\t\"active\" : " + active
+					+ "\n}";
+			
+			return json.getBytes();
+		}
+		else {
+			return "not implemented yet".getBytes();
+		}
 	}
 	public boolean isActive() {
 		return active;
@@ -132,7 +137,4 @@ public class IntrospectResponse {
 				+ iat + ", nbf=" + nbf + ", sub=" + sub + ", aud=" + aud
 				+ ", iss=" + iss + ", cti=" + cti + "]";
 	}
-	
-	
-	
 }

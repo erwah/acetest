@@ -2,6 +2,8 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
 import java.nio.charset.StandardCharsets;
 
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,12 +20,9 @@ public class IntrospectRequest {
 	private String token = "";
 	private String resource_id = "";
 	
-	public IntrospectRequest(byte[] payload) throws JSONException, JoseException {
-		// is it JSON or CBOR?
-		// TODO: do the real check and add CBOR support
-		boolean isJSON = true;
+	public IntrospectRequest(byte[] payload, int contentFormat) throws Exception {
 		
-		if(isJSON) {
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
 			setClientID(obj.getString("client_id"));
@@ -35,6 +34,13 @@ public class IntrospectRequest {
 				setResourceId(obj.getString("resource_id"));
 			}
 		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			throw new Exception("CBOR not implemented yet");
+		}
+		else {
+			throw new Exception("Unknown content format.");
+		}		
+		
 	}
 
 	public IntrospectRequest() {

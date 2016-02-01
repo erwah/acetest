@@ -72,6 +72,17 @@ public class ServerConfiguration {
 	    	    String csp = item.getString("csp");
 	            rs.setCsp(csp);
 
+	    	    String tokenFormat = item.getString("tokenformat");
+	    	    if("JWT".equals(tokenFormat)) {
+		            rs.setTokenFormat(ResourceServer.TOKEN_FORMAT_JWT);
+	    	    }
+	    	    else {
+		            rs.setTokenFormat(ResourceServer.TOKEN_FORMAT_CWT);
+	    	    }
+	    	    
+	    	    String scopes = item.getString("scopes");
+	    	    rs.setScopes(scopes);
+
 	    	    JSONArray authorizedClients = item.getJSONArray("authorizedClients");
 	        	for (int c=0; c<authorizedClients.length(); c++) {
 	        	    String client = authorizedClients.getString(c);

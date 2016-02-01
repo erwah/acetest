@@ -25,7 +25,7 @@ public class JWTTest {
 		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
 		jwk.setKeyId("testkid");
 
-		token = jwt.generateJWT(config.getSignAndEncryptKey(), "myAud", jwk);
+		token = jwt.generateJWT(config.getSignAndEncryptKey(), "myAud", "read", jwk);
 	}
 	
 	@Test

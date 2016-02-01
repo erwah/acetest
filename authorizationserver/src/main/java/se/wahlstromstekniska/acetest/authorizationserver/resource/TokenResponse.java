@@ -2,6 +2,7 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
 import java.nio.charset.StandardCharsets;
 
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,12 +17,8 @@ public class TokenResponse {
 	private String csp = "";
 	private String key = "";
 	
-	public TokenResponse(byte[] payload) throws JSONException, JoseException {
-		// is it JSON or CBOR?
-		// TODO: do the real check and add CBOR support
-		boolean isJSON = true;
-		
-		if(isJSON) {
+	public TokenResponse(byte[] payload, int contentFormat) throws Exception {
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
 			setAccessToken(obj.getString("access_token"));
@@ -31,6 +28,9 @@ public class TokenResponse {
 				setKey(obj.getString("key"));
 			}
 		}
+		else {
+			throw new Exception("Not implemented yet");
+		}		
 	}
 	
 	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key) {
@@ -40,20 +40,25 @@ public class TokenResponse {
 		this.key = key;
 	}
 
-	public String toJSON() {
+	public byte[] toPayload(int contentFormat) {
 
-		String json = "{ "
-				+ "\n\t\"access_token\" : \"" + accessToken + "\"," 
-				+ "\n\t\"token_type\" : \"" + Constants.tokenTypePOP + "\","
-				+ "\n\t\"csp\" : \"" + csp+ "\"";
-		
-		if(key != null) {
-			json += ",\n\t\"key\" : \"" + key + "\"";
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
+			String json = "{ "
+					+ "\n\t\"access_token\" : \"" + accessToken + "\"," 
+					+ "\n\t\"token_type\" : \"" + Constants.tokenTypePOP + "\","
+					+ "\n\t\"csp\" : \"" + csp+ "\"";
+			
+			if(key != null) {
+				json += ",\n\t\"key\" : \"" + key + "\"";
+			}
+			
+			json += "\n}";
+			
+			return json.getBytes();
 		}
-		
-		json += "\n}";
-		
-		return json;
+		else {
+			return "not implemented yet".getBytes();
+		}
 	}
 	
 	public String getAccessToken() {

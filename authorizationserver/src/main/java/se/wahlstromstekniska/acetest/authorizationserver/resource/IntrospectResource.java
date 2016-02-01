@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.scandium.dtls.ContentType;
 
 import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
 import se.wahlstromstekniska.acetest.authorizationserver.ErrorResponse;
@@ -27,12 +28,13 @@ public class IntrospectResource extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
 
 		logger.info("Request: " + exchange.getRequestText());
+		int contentFormat = exchange.getRequestOptions().getContentFormat();
 
     	// take request and turn it into a TokenRequest object
     	byte[] payload = exchange.getRequestPayload();
     	IntrospectRequest introspectRequest  = null;
     	try {
-    		introspectRequest = new IntrospectRequest(payload);
+    		introspectRequest = new IntrospectRequest(payload, contentFormat);
     	} catch (Exception e) {
     		// request is not valid (missing mandatory attributes)
 			logger.info("Could not parse request: " + e.getMessage());
@@ -65,10 +67,11 @@ public class IntrospectResource extends CoapResource {
         			}
 				}
 
-				String json = response.toJSON();
-    			logger.info("Response: " + json);
+        		
+				byte[] responsePayload = response.toPayload(contentFormat);
+    			logger.info("Response: " + new String(responsePayload));
 
-                exchange.respond(json);
+                exchange.respond(ResponseCode.CONTENT, responsePayload, contentFormat);
         	}
         	else {
         		// wrong creds client was not authenticated successfully, return errors
