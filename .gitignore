@@ -17,3 +17,4 @@ certs/root.srl
 certs/server.crt
 certs/server.csr
 certs/trustStore.jks
+client/log4j-application.log

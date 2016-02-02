@@ -3,8 +3,6 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.jose4j.lang.JoseException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.AccessToken;

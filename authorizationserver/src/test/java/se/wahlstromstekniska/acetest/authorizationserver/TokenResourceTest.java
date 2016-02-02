@@ -46,7 +46,7 @@ public class TokenResourceTest {
 		req.setScopes("read write");
 
 		request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
-		request.setPayload(req.toJson());
+		request.setPayload(req.toPayload(MediaTypeRegistry.APPLICATION_JSON));
 		Response response = request.send().waitForResponse();
 
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
@@ -64,7 +64,7 @@ public class TokenResourceTest {
 		req.setClientSecret("qwerty");
 		req.setScopes("read write");
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 
 		System.out.println(response);
 		System.out.println("Time elapsed (ms): " + response.getRTT());
@@ -87,7 +87,7 @@ public class TokenResourceTest {
 		req.setScopes("read write");
 		req.setKey(jwk);
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
 
@@ -110,7 +110,7 @@ public class TokenResourceTest {
 		req.setScopes("read write");
 		req.setKey(jwk);
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
 
@@ -126,20 +126,9 @@ public class TokenResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 		req.setScopes("wrongscopes");
-		callBadRequestEndpointCall(req.toJson(), "invalid_scope", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "invalid_scope", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 	
-	@Test
-	public void testWrongContentTypeCBOR() throws Exception {
-		TokenRequest req = new TokenRequest();
-		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("wrongscopes");
-		callBadRequestEndpointCall(req.toJson(), "invalid_request", MediaTypeRegistry.APPLICATION_CBOR);
-	}	
-		
 
 	@Test
 	public void testWrongContentTypePlain() throws Exception {
@@ -148,7 +137,7 @@ public class TokenResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 		req.setScopes("read write");
-		callBadRequestEndpointCall(req.toJson(), "invalid_request", MediaTypeRegistry.TEXT_PLAIN);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "invalid_request", MediaTypeRegistry.TEXT_PLAIN);
 	}
 		
 
@@ -159,7 +148,7 @@ public class TokenResourceTest {
 		req.setAud("tempSensorInLivingRoom");
 		req.setClientID("notmyclient");
 		req.setClientSecret("qwerty");
-		callBadRequestEndpointCall(req.toJson(), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	@Test
@@ -169,7 +158,7 @@ public class TokenResourceTest {
 		req.setAud("tempSensorInLivingRoom");
 		req.setClientID("myclient");
 		req.setClientSecret("wrongpassword");
-		callBadRequestEndpointCall(req.toJson(), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	@Test
@@ -179,7 +168,7 @@ public class TokenResourceTest {
 		req.setAud("wrongaud");
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
-		callBadRequestEndpointCall(req.toJson(), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	@Test
@@ -189,7 +178,7 @@ public class TokenResourceTest {
 		req.setAud("tempSensorInLivingRoom");
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
-		callBadRequestEndpointCall(req.toJson(), "invalid_grant", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "invalid_grant", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 	
 	@Test
@@ -198,7 +187,7 @@ public class TokenResourceTest {
 		req.setGrantType("client_credentials");
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
-		callBadRequestEndpointCall(req.toJson(), "invalid_request", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "invalid_request", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	@Test
@@ -207,11 +196,11 @@ public class TokenResourceTest {
 		req.setAud("tempSensorInLivingRoom");
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
-		callBadRequestEndpointCall(req.toJson(), "invalid_request", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "invalid_request", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	
-	private void callBadRequestEndpointCall(String payload, String expectedError, int contentType) throws Exception {
+	private void callBadRequestEndpointCall(byte[] payload, String expectedError, int contentType) throws Exception {
 
 		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", payload, contentType);
 		
@@ -219,7 +208,7 @@ public class TokenResourceTest {
 		
     	// take request and turn it into a TokenRequest object
     	byte[] error = response.getPayload();
-    	ErrorResponse errorResp = new ErrorResponse(error);
+    	ErrorResponse errorResp = new ErrorResponse(error, MediaTypeRegistry.APPLICATION_JSON);
     	Assert.assertEquals(expectedError, errorResp.getError());
 	}
 	

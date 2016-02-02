@@ -22,7 +22,6 @@ public class CoAPAuthorizationServer extends CoapServer {
 	
     public static void main(String[] args) throws Exception {
         try {
-            logger.info("Starting server.");
             server = new CoAPAuthorizationServer();
         	server.start();
         } catch (SocketException e) {
@@ -42,7 +41,6 @@ public class CoAPAuthorizationServer extends CoapServer {
 			if (addr instanceof Inet4Address || addr.isLoopbackAddress()) {
 				InetSocketAddress bindToAddress = new InetSocketAddress(addr, config.getCoapPort());
 				addEndpoint(new CoapEndpoint(bindToAddress));
-	            logger.info("Bound CoAP server to " + addr + " and port " + config.getCoapPort());
 			}
 		}
 

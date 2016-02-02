@@ -16,6 +16,7 @@ public class JWT {
 		AccessToken token = new AccessToken();
 		token.setAudience(aud);
 		token.setScopes(scopes);
+		token.setKey(clientsPublicKey);
 		
 	    // add the claims for aud, issuedAt
 	    JwtClaims claims = new JwtClaims();

@@ -39,7 +39,6 @@ public class CoAPSAuthorizationServer extends CoapServer {
 
 	public static void main(String[] args) {
         try {
-            logger.info("Starting server.");
             server = new CoAPSAuthorizationServer();
         	server.start();
         } catch (Exception e) {
@@ -88,7 +87,6 @@ public class CoAPSAuthorizationServer extends CoapServer {
 				addEndpoint(endpoint);
 				// TODO: make sure this was placed correctly
 				EndpointManager.getEndpointManager().setDefaultSecureEndpoint(endpoint);
-	            logger.info("Bound CoAPS server to " + addr + " and port " + config.getCoapsPort());
 			}
 		}
     }

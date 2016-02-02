@@ -60,7 +60,7 @@ public class ServerConfiguration {
 			// TODO: validate config
 
 			// load resource servers
-	    	logger.info("Loading configured resource servers.");
+			logger.debug("Loading configured resource servers.");
 
 	    	JSONArray rsList = getProperties().getJSONArray("resourceservers");
 	    	for (int i=0; i<rsList.length(); i++) {
@@ -93,7 +93,7 @@ public class ServerConfiguration {
 	    	}
 	    	
 	    	// load clients
-	    	logger.info("Loading configured clients.");
+	    	logger.debug("Loading configured clients.");
 	        
 	    	JSONArray clientList = getProperties().getJSONArray("clients");
 	    	for (int i=0; i<clientList.length(); i++) {
@@ -105,30 +105,30 @@ public class ServerConfiguration {
 	    	}
 	    	
 	    	// load port(s) config
-	    	logger.info("Loading ports resource servers.");
+	    	logger.debug("Loading ports resource servers.");
 	    	setCoapPort(getProperties().getJSONObject("server").getInt("coapPort"));
 	    	setCoapsPort(getProperties().getJSONObject("server").getInt("coapsPort"));
 
 	    	// load trust store
-	    	logger.info("Loading trust store information.");
+	    	logger.debug("Loading trust store information.");
 	    	setTrustStoreLocation(getProperties().getJSONObject("server").getString("trustStoreLocation"));
 	    	setTrustStorePassword(getProperties().getJSONObject("server").getString("trustStorePassword"));
 
 	    	// load key store
-	    	logger.info("Loading key store information.");
+	    	logger.debug("Loading key store information.");
 	    	setKeyStoreLocation(getProperties().getJSONObject("server").getString("keyStoreLocation"));
 	    	setKeyStorePassword(getProperties().getJSONObject("server").getString("keyStorePassword"));
 
 	    	// load psk
-	    	logger.info("Loading PSK.");
+	    	logger.debug("Loading PSK.");
 	    	setPsk(getProperties().getJSONObject("server").getString("psk"));
 
 	    	// load sign and encryption key
-	    	logger.info("Loading sign and encryption key.");
+	    	logger.debug("Loading sign and encryption key.");
 	    	String key = getProperties().getJSONObject("server").getJSONObject("signAndEncryptKey").toString();
     		setSignAndEncryptKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 		} catch (Exception e) {
-			logger.info("Failed to parse configuration file: " + configFilePath);
+			logger.fatal("Failed to parse configuration file: " + configFilePath);
 			EllipticCurveJsonWebKey jwk;
 			try {
 				jwk = generateKey("AS signing key");
@@ -141,10 +141,6 @@ public class ServerConfiguration {
 			
 			logger.info("Shutting down server. Make sure to add a sign and encryption key to the config.json file.");
 
-			System.exit(0);
-
-			logger.info("Shutting down...");
-			e.printStackTrace();
 			System.exit(0);
 		}
  

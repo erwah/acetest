@@ -27,14 +27,14 @@ public class ResourceServerTest {
 		rs.addAccessToken(validToken);
 		
 		// validate token
-		Assert.assertTrue(rs.validateToken(exampleToken));
+		AccessToken at = rs.getResourceTokensTokenRepresentation(exampleToken);
+		Assert.assertNotNull(at);
 
 		// remove token
 		rs.removeAccessToken(validToken);;
 
-		// token should not be valid any more when removed
-		Assert.assertFalse(rs.validateToken(exampleToken));
-
+		AccessToken at2 = rs.getResourceTokensTokenRepresentation(exampleToken);
+		Assert.assertNull(at2);
 	}
 	
 	@Test
@@ -52,7 +52,9 @@ public class ResourceServerTest {
 		rs.addAccessToken(t3);
 
 		// see if we can find second token
-		Assert.assertTrue(rs.validateToken("t2"));
+		AccessToken at = rs.getResourceTokensTokenRepresentation("t2");
+		Assert.assertNotNull(at);
+		Assert.assertEquals("t2", at.getAccessToken());
 	}
 
 }

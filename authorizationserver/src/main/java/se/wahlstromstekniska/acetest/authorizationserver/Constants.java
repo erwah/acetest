@@ -1,6 +1,5 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 public class Constants {
 

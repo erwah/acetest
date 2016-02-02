@@ -1,16 +1,18 @@
 package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
-import org.jose4j.lang.JoseException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.Constants;
 import se.wahlstromstekniska.acetest.authorizationserver.exception.RequestException;
+import co.nstant.in.cbor.CborDecoder;
+import co.nstant.in.cbor.model.DataItem;
 
 /**
  * Parses a TokenReques, JSON or CBOR and expose getters for all values.
@@ -46,7 +48,31 @@ public class TokenRequest {
 			}
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
-			throw new Exception("CBOR not implemented yet");
+			ByteArrayInputStream bais = new ByteArrayInputStream(payload);
+			List<DataItem> dataItems = new CborDecoder(bais).decode();
+			for(DataItem dataItem : dataItems) {
+				
+				String s = dataItem.toString();
+				
+				
+				
+				
+/*
+  				setGrantType(obj.getString("grant_type"));
+ 
+				setAud(obj.getString("aud"));
+				setClientID(obj.getString("client_id"));
+				setClientSecret(obj.getString("client_secret"));
+				setScopes(obj.getString("scopes"));
+				
+				// either client or AS can generate keys
+				if(obj.has("key")) {
+					// client generated keys and sent public key
+					JsonWebKey jwk = JsonWebKey.Factory.newJwk(obj.getJSONObject("key").toString());
+					setKey(jwk);
+				}
+*/
+			}
 		}
 		else {
 			throw new Exception("Unknown content format.");
@@ -137,24 +163,49 @@ public class TokenRequest {
 	public void setContentFormat(int contentFormat) {
 		this.contentFormat = contentFormat;
 	}
-
 	
-	public String toJson() {
-		
-		String json = "{"
-	     + "  \"grant_type\" : \"" + grant_type + "\","
-	     + "  \"aud\" : \"" + aud + "\",";
-		
-		if(key != null) {
-		     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
-		}
-		
-		json += "  \"client_id\" : \"" + client_id + "\","
-	     + "  \"client_secret\" : \"" + client_secret + "\","
-	     + "  \"scopes\" : \"" + scopes + "\""
-	   	 + "}";
+	public byte[] toPayload(int contentFormat) throws Exception {
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
+			String json = "{"
+				     + "  \"grant_type\" : \"" + grant_type + "\","
+				     + "  \"aud\" : \"" + aud + "\",";
+					
+					if(key != null) {
+					     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
+					}
+					
+					json += "  \"client_id\" : \"" + client_id + "\","
+				     + "  \"client_secret\" : \"" + client_secret + "\","
+				     + "  \"scopes\" : \"" + scopes + "\""
+				   	 + "}";
 
-		return json;
+					return json.getBytes();
+		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			return "not implemented".getBytes();
+			/*
+			        /-----------+--------------+-----------------------\
+			        | Value     | Major Type   | Key                   |
+			        |-----------+--------------+-----------------------|
+			        | 0         | 0            | grant_type            |
+			        | 1         | 0            | client_id             |
+			        | 2         | 0            | client_secret         |
+			        | 3         | 0            | scope                 |
+			        | 4         | 0            | aud                   |
+			        | 5         | 0            | alg                   |
+			        | 6         | 0            | key                   |
+			        \-----------+--------------+-----------------------/
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			new CborEncoder(baos).encode(new CborBuilder()
+			    .add(new DataItem(MajorType.UNICODE_STRING).setTag(0)
+			        .end()
+			    .build());
+			return baos.toByteArray();			
+			 */
+		}
+		else {
+			throw new Exception("Unknown content format.");
+		}
 	}
 
 	@Override

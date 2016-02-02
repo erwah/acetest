@@ -3,8 +3,6 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.jose4j.lang.JoseException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -27,13 +25,16 @@ public class IntrospectResponse {
 	private String aud = "";
 	private String iss = "";
 	private String cti = "";
+
+	private String aif = "";
+	private String key = "";
+
 	
 	public IntrospectResponse(boolean active) {
 		this.active = active;
 	}
 
 	public IntrospectResponse(byte[] payload, int contentFormat) throws Exception {
-
 		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
@@ -48,8 +49,17 @@ public class IntrospectResponse {
 
 		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = "{ "
-					+ "\n\t\"active\" : " + active
-					+ "\n}";
+					+ "\n\t\"active\" : " + active;
+			
+			if(key != null && key.length() > 0) {
+				json += ",\n\t\"key\" : " + key;
+			}
+			
+			if(aif!= null && aif.length() > 0) {
+				json += ",\n\t\"aif\" : " + aif;
+			}
+
+			json += "\n}";
 			
 			return json.getBytes();
 		}
@@ -129,12 +139,31 @@ public class IntrospectResponse {
 	public void setCti(String cti) {
 		this.cti = cti;
 	}
+	
+	public String getAif() {
+		return aif;
+	}
+
+	public void setAif(String aif) {
+		this.aif = aif;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
 	@Override
 	public String toString() {
 		return "IntrospectResponse [active=" + active + ", scope=" + scope
 				+ ", client_id=" + client_id + ", username=" + username
 				+ ", token_type=" + token_type + ", exp=" + exp + ", iat="
 				+ iat + ", nbf=" + nbf + ", sub=" + sub + ", aud=" + aud
-				+ ", iss=" + iss + ", cti=" + cti + "]";
+				+ ", iss=" + iss + ", cti=" + cti + ", aif=" + aif + ", key="
+				+ key + "]";
 	}
+
 }

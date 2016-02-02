@@ -59,14 +59,13 @@ public class ResourceServer {
 		accessTokens.remove(token);
 	}
 	
-	public boolean validateToken(String token) {
-		boolean validity = false;
+	public AccessToken getResourceTokensTokenRepresentation(String token) {
 		for (AccessToken t : accessTokens) {
 			if(t.getAccessToken().equals(token)) {
-				validity = true;
+				return t;
 			}
 		}
-		return validity;
+		return null;
 	}
 
 	public int getTokenFormat() {

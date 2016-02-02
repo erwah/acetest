@@ -32,7 +32,7 @@ public class ClientAuthentication {
 			ClientCredentials client = config.getClient(clientId);
 			if(client != null) {
 				if(client.getClient_id().equals(clientId) && client.getClient_secret().equals(clientSecret)) {
-					logger.info("Client '" + clientId + "' authenticated successfully.");
+					logger.debug("Client '" + clientId + "' authenticated successfully.");
 					ok = true;
 				}
 			}

@@ -20,12 +20,13 @@ public class Client {
 		req.setAud("tempSensorInLivingRoom");
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
+		req.setScopes("read write");
 
 		Response response;
 		try {
-			response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.TEXT_PLAIN);
+			response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);
 
-			TokenResponse tokenResponse = new TokenResponse(response.getPayload());
+			TokenResponse tokenResponse = new TokenResponse(response.getPayload(), response.getOptions().getContentFormat());
 			
 			String accessToken = tokenResponse.getAccessToken();
 			

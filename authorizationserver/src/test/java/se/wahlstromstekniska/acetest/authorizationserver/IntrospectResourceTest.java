@@ -52,7 +52,7 @@ public class IntrospectResourceTest {
 		createReq.setKey(jwk);
 
 
-		Response createResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", createReq.toJson(), MediaTypeRegistry.APPLICATION_JSON);		
+		Response createResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", createReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 		Assert.assertEquals(ResponseCode.CONTENT, createResponse.getCode());
 		
 		TokenResponse tokenResponse = new TokenResponse(createResponse.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
@@ -63,7 +63,7 @@ public class IntrospectResourceTest {
 		introspectionReq.setClientID("myclient");
 		introspectionReq.setClientSecret("qwerty");
 		
-		Response introspectionResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", introspectionReq.toJson(), MediaTypeRegistry.APPLICATION_JSON);	
+		Response introspectionResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", introspectionReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);	
 
 		Assert.assertEquals(introspectionResponse.getCode(), ResponseCode.CONTENT);
 
@@ -90,7 +90,7 @@ public class IntrospectResourceTest {
 		
 		Request request = Request.newPost();
 		request.setURI("coap://localhost:"+config.getCoapPort()+"/"+Constants.TOKEN_RESOURCE);
-		request.setPayload(createReq.toJson());
+		request.setPayload(createReq.toPayload(MediaTypeRegistry.APPLICATION_JSON));
 		request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
 
 		Response createResponse = request.send().waitForResponse();
@@ -107,7 +107,7 @@ public class IntrospectResourceTest {
 		
 		Request introspectionRequest = Request.newPost();
 		introspectionRequest.setURI("coap://localhost:"+config.getCoapPort()+"/"+Constants.INSTROSPECTION_RESOURCE);
-		introspectionRequest.setPayload(introspectionReq.toJson());
+		introspectionRequest.setPayload(introspectionReq.toPayload(MediaTypeRegistry.APPLICATION_JSON));
 		introspectionRequest.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
 
 		Response introspectionResponse = introspectionRequest.send().waitForResponse();
@@ -125,7 +125,7 @@ public class IntrospectResourceTest {
 		req.setToken("loremipsum");
 		req.setClientID("notmyclient");
 		req.setClientSecret("qwerty");
-		callBadRequestEndpointCall(req.toJson(), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	@Test
@@ -134,7 +134,7 @@ public class IntrospectResourceTest {
 		req.setToken("loremipsum");
 		req.setClientID("myclient");
 		req.setClientSecret("wrongpassword");
-		callBadRequestEndpointCall(req.toJson(), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
+		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "unauthorized_client", MediaTypeRegistry.APPLICATION_JSON);
 	}	
 
 	@Test
@@ -144,7 +144,7 @@ public class IntrospectResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 		
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", req.toJson(), MediaTypeRegistry.APPLICATION_JSON);	
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);	
 
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
 
@@ -152,14 +152,14 @@ public class IntrospectResourceTest {
 		Assert.assertFalse(introspectResponse.isActive());
 	}	
 
-	private void callBadRequestEndpointCall(String payload, String expectedError, int contentFormat) throws Exception {
+	private void callBadRequestEndpointCall(byte[] payload, String expectedError, int contentFormat) throws Exception {
 		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", payload, contentFormat);
 
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 		
     	// take request and turn it into a TokenRequest object
     	byte[] error = response.getPayload();
-    	ErrorResponse errorResp = new ErrorResponse(error);
+    	ErrorResponse errorResp = new ErrorResponse(error, MediaTypeRegistry.APPLICATION_JSON);
     	Assert.assertEquals(expectedError, errorResp.getError());
 	}
 }

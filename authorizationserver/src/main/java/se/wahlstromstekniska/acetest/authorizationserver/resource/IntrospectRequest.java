@@ -3,9 +3,6 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.lang.JoseException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -95,16 +92,21 @@ public class IntrospectRequest {
 				+ resource_id + "]";
 	}
 	
-	public String toJson() {
+	public byte[] toPayload(int contentFormat) {
 		
-		String json = "{"
-	     + "  \"client_id\" : \"" + client_id + "\","
-	     + "  \"client_secret\" : \"" + client_secret + "\","
-		 + "  \"token\" : \"" + token + "\","
-	     + "  \"resource_id\" : \"" + resource_id + "\""
-	   	 + "}";
+		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
+			String json = "{"
+				     + "  \"client_id\" : \"" + client_id + "\","
+				     + "  \"client_secret\" : \"" + client_secret + "\","
+					 + "  \"token\" : \"" + token + "\","
+				     + "  \"resource_id\" : \"" + resource_id + "\""
+				   	 + "}";
 
-		return json;
+					return json.getBytes();
+		}
+		else {
+			return "not implemented".getBytes();
+		}
 	}	
 
 }

@@ -28,7 +28,7 @@ public class DTLSRequest {
 	static boolean loop = false;
 	static boolean useRaw = true;
 
-	public static Response dtlsRequest(String uri, String method, String payload, int contentFormat) throws Exception {
+	public static Response dtlsRequest(String uri, String method, byte[] payload, int contentFormat) throws Exception {
 		boolean usePSK = true;
 
 		Request request = Utils.newRequest(method);
