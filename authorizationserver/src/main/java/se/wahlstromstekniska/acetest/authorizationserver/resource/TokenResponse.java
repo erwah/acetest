@@ -13,7 +13,10 @@ public class TokenResponse {
 	private String accessToken = "";
 	private String tokenType = "";
 	private String csp = "";
-	private String key = "";
+	
+	// TODO: It's right now a JWK serialized as a string, but we need to handle COSE in a good way also.
+	private String key = null;
+	private String pskIdentity = null;
 	
 	public TokenResponse(byte[] payload, int contentFormat) throws Exception {
 		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
@@ -23,19 +26,26 @@ public class TokenResponse {
 			setTokenType(obj.getString("token_type"));
 			setCsp(obj.getString("csp"));
 			if(obj.has("key")) {
-				setKey(obj.getString("key"));
+				setKey(obj.getJSONObject("key").toString());
 			}
+			if(obj.has("psk_identity")) {
+				setPskIdentity(obj.getString("psk_identity"));
+			}
+		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			throw new Exception("Not implemented yet");
 		}
 		else {
 			throw new Exception("Not implemented yet");
 		}		
 	}
 	
-	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key) {
+	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key, String pskIdentity) {
 		this.accessToken = accessToken.getAccessToken();
 		this.tokenType = tokenType;
 		this.csp = csp;
 		this.key = key;
+		this.pskIdentity = pskIdentity;
 	}
 
 	public byte[] toPayload(int contentFormat) {
@@ -47,12 +57,19 @@ public class TokenResponse {
 					+ "\n\t\"csp\" : \"" + csp+ "\"";
 			
 			if(key != null) {
-				json += ",\n\t\"key\" : \"" + key + "\"";
+				json += ",\n\t\"key\" : " + key;
 			}
-			
+
+			if(pskIdentity != null) {
+				json += ",\n\t\"psk_identity\" : \"" + pskIdentity + "\"";
+			}
+
 			json += "\n}";
 			
 			return json.getBytes();
+		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			return "not implemented yet".getBytes();
 		}
 		else {
 			return "not implemented yet".getBytes();
@@ -82,5 +99,13 @@ public class TokenResponse {
 	}
 	public void setKey(String key) {
 		this.key = key;
+	}
+
+	public String getPskIdentity() {
+		return pskIdentity;
+	}
+
+	public void setPskIdentity(String pskIdentity) {
+		this.pskIdentity = pskIdentity;
 	}
 }

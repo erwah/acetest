@@ -25,7 +25,7 @@ public class CoAPAuthorizationServer extends CoapServer {
             server = new CoAPAuthorizationServer();
         	server.start();
         } catch (SocketException e) {
-            System.err.println("Failed to initialize server: " + e.getMessage());
+            logger.error("Failed to initialize server.", e);
         }
     }
  

@@ -1,0 +1,11 @@
+{
+	"server" : {
+		"coapPort": 6683,
+		"coapsPort" : 6684,
+		"trustStoreLocation" : "../certs/trustStore.jks",
+		"trustStorePassword" : "rootPass",
+		"keyStoreLocation" : "../certs/keyStore.jks",
+		"keyStorePassword" : "endPass",
+		"psk" : "secretPSK"
+	}
+}

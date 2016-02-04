@@ -32,5 +32,8 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="/authorizationserver"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/scandium"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/scandium-examples"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

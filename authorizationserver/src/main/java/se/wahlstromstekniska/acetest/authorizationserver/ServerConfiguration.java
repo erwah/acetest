@@ -135,8 +135,7 @@ public class ServerConfiguration {
 				String keyStr = jwk.toJson(OutputControlLevel.INCLUDE_PRIVATE);
 				logger.info("Example key object to copy into the server.signAndEncryptKey property: " + keyStr);
 			} catch (JoseException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				logger.error(e1);
 			}
 			
 			logger.info("Shutting down server. Make sure to add a sign and encryption key to the config.json file.");
@@ -152,8 +151,7 @@ public class ServerConfiguration {
 			try {
 				instance = new ServerConfiguration();
 			} catch (Exception e) {
-				logger.fatal("Could not read properties file.");
-				e.printStackTrace();
+				logger.fatal("Could not read properties file.", e);
 			}
 		}
 		return instance;

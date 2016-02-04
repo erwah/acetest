@@ -6,6 +6,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.OctJwkGenerator;
 import org.jose4j.keys.EllipticCurves;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,7 +77,7 @@ public class TokenResourceTest {
 	public void testSuccessClientGeneratedKeys() throws Exception {
 
 		JsonWebKey jwk;
-		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+		jwk = OctJwkGenerator.generateJwk(128);
 		jwk.setKeyId("testkid");
 		
 		TokenRequest req = new TokenRequest();

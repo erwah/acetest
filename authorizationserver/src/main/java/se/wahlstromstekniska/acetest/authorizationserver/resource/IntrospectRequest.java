@@ -104,6 +104,9 @@ public class IntrospectRequest {
 
 					return json.getBytes();
 		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			return "not implemented".getBytes();
+		}
 		else {
 			return "not implemented".getBytes();
 		}

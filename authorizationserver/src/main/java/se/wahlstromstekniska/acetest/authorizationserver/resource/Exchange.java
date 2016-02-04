@@ -38,4 +38,13 @@ public class Exchange {
 		exchange.respond(code, payload, contentFormat);
 	}
 
+	public static void respond(CoapExchange exchange, ResponseCode code) {
+		  
+		logger.info("RESPONSE\n------------------------------------------------------------");
+		logger.info("Header: (Code=" + code + ")");
+
+		exchange.respond(code);
+	}
+
+
 }

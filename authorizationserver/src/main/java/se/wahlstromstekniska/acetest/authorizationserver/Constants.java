@@ -13,7 +13,10 @@ public class Constants {
 
 	public static final String INSTROSPECTION_RESOURCE = "introspect";
 
-	// TODO: register this
-	public static final int MediaTypeRegistry_APPLICATION_CBOR = 60001;
+	public static final String AUTHZ_INFO_RESOURCE = "authz-info";
 
+	// TODO: register this
+	public static final int MediaTypeRegistry_APPLICATION_JWT = 60001;
+	public static final int MediaTypeRegistry_APPLICATION_CWT = 60002;
+	
 }

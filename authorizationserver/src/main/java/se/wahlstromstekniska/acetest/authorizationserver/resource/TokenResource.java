@@ -1,21 +1,16 @@
 package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
-import java.security.Key;
+import java.security.SecureRandom;
+import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
-import org.jose4j.jwe.JsonWebEncryption;
-import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
-import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
-import org.jose4j.keys.AesKey;
-import org.jose4j.keys.EllipticCurves;
-import org.jose4j.lang.ByteUtil;
+import org.jose4j.jwk.OctJwkGenerator;
 
 import se.wahlstromstekniska.acetest.authorizationserver.AccessToken;
 import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
@@ -31,12 +26,14 @@ public class TokenResource extends CoapResource {
     
 	final static Logger logger = Logger.getLogger(TokenResource.class);
 	private static ServerConfiguration config = ServerConfiguration.getInstance();
+	private SecureRandom random = new SecureRandom();
 
+	  
     public TokenResource() {
         super("token");
-        getAttributes().setTitle("OAuth2 Token Endpoint for CoAP");
+        getAttributes().setTitle("OAuth2 Token Resource for CoAP");
         
-        logger.debug("Token endpoints initiated.");
+        logger.debug("Token resource initiated.");
     }
 
     public void handlePOST(CoapExchange exchange) {
@@ -51,13 +48,12 @@ public class TokenResource extends CoapResource {
     		tokenRequest = new TokenRequest(payload, contentFormat);
     	} catch (Exception e) {
     		// request is not valid (missing mandatory attributes)
-    		logger.debug("Could not parse request: " + e.getMessage());
+    		logger.info("Could not parse request.", e);
 			// TODO: Change to cbor.
 			try {
 				Exchange.respond(exchange, ResponseCode.BAD_REQUEST, ErrorResponse.getInvalidRequest(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);
 			} catch (Exception e1) {
-				logger.info("Unknown error");
-				e1.printStackTrace();
+				logger.error("Unknown error.", e);
 			}
     		return;
     	}
@@ -84,7 +80,7 @@ public class TokenResource extends CoapResource {
 	
 	        			if(rs.isClientAuthorized(tokenRequest.getClient_id())) {
 	        				
-	        				// check scopes
+	        				// TODO: check scopes
 	        				// TODO: don't check just as a string, look at each space separated scope.
 	        				if(rs.getScopes().equals(tokenRequest.getScopes())) {
 	        					logger.debug("Client is authorized to get token with scopes: " + tokenRequest.getScopes());
@@ -93,9 +89,9 @@ public class TokenResource extends CoapResource {
 	        					logger.debug("Client " + tokenRequest.getClient_id() + " is authorized to get token for the resource server " + rs.getAud());
 		
 								try {
-	
 									AccessToken token = null;
 									String serializedJwe = "";
+									String pskIdentity = "";
 									
 									if(rs.getTokenFormat() == ResourceServer.TOKEN_FORMAT_JWT) {
 										// get authorization servers signing key
@@ -105,19 +101,21 @@ public class TokenResource extends CoapResource {
 				        				// get key from client and if none, generate keys on AS and return encrypted keys to client
 										JsonWebKey clientsPublicKey = tokenRequest.getRawKey(); 
 										if(clientsPublicKey == null) {
-											clientsPublicKey = EcJwkGenerator.generateJwk(EllipticCurves.P256);
-											clientsPublicKey.setKeyId("asgeneratedKey");
+											clientsPublicKey = OctJwkGenerator.generateJwk(128);
+											
+											// generate a unique kid for the newly generated key
+										    String kid = new BigInteger(130, random).toString(32);
+											clientsPublicKey.setKeyId(kid);
 										}
-				        				
-										Key key = new AesKey(ByteUtil.randomBytes(16));
-										JsonWebEncryption jwe = new JsonWebEncryption();
-										jwe.setPayload(clientsPublicKey.toJson(OutputControlLevel.INCLUDE_PRIVATE));
-										jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.A128KW);
-										jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256);
-										jwe.setKey(key);
-	
-										token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), clientsPublicKey);
-										serializedJwe = jwe.getCompactSerialization();
+										
+										// generate a unique PSK identity that's used by by the client when accessing the resource server
+										pskIdentity = new BigInteger(130, random).toString(32);
+										// TODO: encrypt the key if C to RS communication is not encrypted by TLS/DTLS.
+										
+										
+										token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), clientsPublicKey, pskIdentity);
+										serializedJwe = clientsPublicKey.toJson(OutputControlLevel.INCLUDE_PRIVATE);
+										
 									}
 									else {
 										throw new Exception("CWT not implemented yet.");
@@ -125,10 +123,10 @@ public class TokenResource extends CoapResource {
 			        				
 									TokenResponse response = null;
 									if(tokenRequest.getRawKey() != null) {
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null);
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, null);
 									}
 									else {
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), serializedJwe);
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), serializedJwe, pskIdentity);
 									}
 			        				
 			        				byte[] responsePayload = response.toPayload(contentFormat);
@@ -179,21 +177,19 @@ public class TokenResource extends CoapResource {
     			try {
 					Exchange.respond(exchange, ResponseCode.BAD_REQUEST, ErrorResponse.getInvalidGrant(contentFormat), contentFormat);
 				} catch (Exception e1) {
-					logger.debug("Unknown content format: " + e.getMessage());
+					logger.debug("Unknown content format.", e);
 				}
     		}
     		
     		try {
 				Exchange.respond(exchange, ResponseCode.BAD_REQUEST, ErrorResponse.getUnauthorizedClient(contentFormat), contentFormat);
 			} catch (Exception e1) {
-				logger.debug("Unknown content format: " + e.getMessage());
+				logger.debug("Unknown content format.", e);
 			}
     	} catch (Exception e) {
     		// TODO: sometimes it can be an content format error...
-			logger.info("Unknown error.");
-			e.printStackTrace();
+			logger.info("Unknown error.", e);
 		}
-    	
 
     }
     

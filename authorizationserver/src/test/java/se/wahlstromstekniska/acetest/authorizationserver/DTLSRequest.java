@@ -28,6 +28,7 @@ public class DTLSRequest {
 	static boolean loop = false;
 	static boolean useRaw = true;
 
+	
 	public static Response dtlsRequest(String uri, String method, byte[] payload, int contentFormat) throws Exception {
 		boolean usePSK = true;
 
@@ -70,5 +71,48 @@ public class DTLSRequest {
 		
 		return response;
 	}
+	
+	public static Response dtlsRequest(String uri, String method, byte[] payload, int contentFormat, String pskIdentity, byte[] pskKey) throws Exception {
+		boolean usePSK = true;
+
+		Request request = Utils.newRequest(method);
+		request.setURI(uri);
+		request.setPayload(payload);
+		request.getOptions().setContentFormat(contentFormat);
+
+		// load trust store
+		KeyStore trustStore = KeyStore.getInstance("JKS");
+		InputStream inTrust = new FileInputStream(config.getTrustStoreLocation());
+		trustStore.load(inTrust, config.getTrustStorePassword().toCharArray());
+		// load multiple certificates if needed
+		Certificate[] trustedCertificates = new Certificate[1];
+		trustedCertificates[0] = trustStore.getCertificate("root");
+
+		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
+
+		builder.setTrustStore(trustedCertificates);
+		if (usePSK) {
+			builder.setPskStore(new StaticPskStore(pskIdentity, pskKey));
+			builder.setSupportedCipherSuites(new CipherSuite[] {CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
+		} else {
+			KeyStore keyStore = KeyStore.getInstance("JKS");
+			InputStream in = new FileInputStream(config.getKeyStoreLocation());
+			keyStore.load(in, config.getKeyStorePassword().toCharArray());
+			builder.setIdentity((PrivateKey)keyStore.getKey("client", config.getKeyStorePassword().toCharArray()), keyStore.getCertificateChain("client"), useRaw);
+		}
+
+		DTLSConnector dtlsconnector = new DTLSConnector(builder.build(), null);
+
+		NetworkConfig nc = NetworkConfig.getStandard().setInt("COAP_SECURE_PORT", 15684);
+
+		dtlsEndpoint = new CoapEndpoint(dtlsconnector, nc);
+		dtlsEndpoint.start();
+
+		// execute request
+		request.send(dtlsEndpoint);
+		Response response = request.waitForResponse();
+		
+		return response;
+	}	
 	
 }

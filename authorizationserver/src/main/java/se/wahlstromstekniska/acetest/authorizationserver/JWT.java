@@ -11,7 +11,7 @@ import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey clientsPublicKey) throws Exception {
+	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey clientsPublicKey, String pskIdentity) throws Exception {
 
 		AccessToken token = new AccessToken();
 		token.setAudience(aud);
@@ -25,12 +25,17 @@ public class JWT {
 	    claims.setIssuedAtToNow();  // when the token was issued/created (now)
 	    
 	    token.setIssuedAt(new Date(claims.getIssuedAt().getValue()));
+
+	    if(pskIdentity != null && pskIdentity.length() > 0) {
+		    // when using PSK the client is required to send a PSK Identity to the RS
+		    claims.setClaim("psk_identity", pskIdentity);
+	    }
 	    
 	    JsonWebSignature jws = new JsonWebSignature();
 
 	    String claimsJson = claims.toJson();
 
-	    String cnf = "\"cnf\": {\"jwk\":" + clientsPublicKey.toJson(OutputControlLevel.PUBLIC_ONLY) + "}";
+	    String cnf = "\"cnf\": {\"jwk\":" + clientsPublicKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
 	    // TODO: this is just a quick fix to handle objects in JwtClaims. Remove scary parsing.
 	    
 	    // remove last } sign

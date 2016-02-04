@@ -40,6 +40,9 @@ public class IntrospectResponse {
 			JSONObject obj = new JSONObject(json);
 			setActive(obj.getBoolean("active"));
 		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			throw new Exception("Not implemented yet");
+		}
 		else {
 			throw new Exception("Not implemented yet");
 		}
@@ -62,6 +65,9 @@ public class IntrospectResponse {
 			json += "\n}";
 			
 			return json.getBytes();
+		}
+		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			return "not implemented yet".getBytes();
 		}
 		else {
 			return "not implemented yet".getBytes();

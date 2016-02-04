@@ -29,6 +29,4 @@ public class ClientCredentials {
 		return "ClientCredentials [client_id=" + client_id + ", client_secret=xxxx]";
 	}
 	
-	
-	
 }

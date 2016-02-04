@@ -38,11 +38,11 @@ public class IntrospectResource extends CoapResource {
     		introspectRequest = new IntrospectRequest(payload, contentFormat);
     	} catch (Exception e) {
     		// request is not valid (missing mandatory attributes)
-    		logger.debug("Could not parse request: " + e.getMessage());
+    		logger.debug("Could not parse request.", e);
 			try {
 				Exchange.respond(exchange, ResponseCode.BAD_REQUEST, ErrorResponse.getInvalidRequest(contentFormat), contentFormat);
 			} catch (Exception e1) {
-				logger.debug("Unknown content format: " + e.getMessage());
+				logger.debug("Unknown content format.", e);
 			}
     		return;
     	}
@@ -54,7 +54,7 @@ public class IntrospectResource extends CoapResource {
 			try {
 				Exchange.respond(exchange, ResponseCode.BAD_REQUEST, ErrorResponse.getInvalidRequest(contentFormat), contentFormat);
 			} catch (Exception e) {
-				logger.debug("Unknown content format: " + e.getMessage());
+				logger.debug("Unknown content format.", e);
 			}
     	}
     	else {
@@ -93,7 +93,7 @@ public class IntrospectResource extends CoapResource {
 				try {
 					Exchange.respond(exchange, ResponseCode.BAD_REQUEST, ErrorResponse.getUnauthorizedClient(contentFormat), contentFormat);
 				} catch (Exception e) {
-					logger.debug("Unknown content format: " + e.getMessage());
+					logger.debug("Unknown content format.", e);
 				}
         	}
     	}
