@@ -3,12 +3,10 @@ package se.wahlstromstekniska.acetest.resourceserver;
 
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.ArrayList;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.californium.scandium.dtls.pskstore.InMemoryPskStore;
-import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.ServerConfiguration;

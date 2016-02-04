@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
+import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResponse;
 
 public class TokenResourceTest {
 
@@ -50,9 +51,9 @@ public class TokenResourceTest {
 		request.setPayload(req.toPayload(MediaTypeRegistry.APPLICATION_JSON));
 		Response response = request.send().waitForResponse();
 
-		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
-		
-		TestUtils.validateToken(response.getPayload(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
+
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
 	}
 	
 	@Test
@@ -76,8 +77,7 @@ public class TokenResourceTest {
 	@Test
 	public void testSuccessClientGeneratedKeys() throws Exception {
 
-		JsonWebKey jwk;
-		jwk = OctJwkGenerator.generateJwk(128);
+		JsonWebKey jwk = OctJwkGenerator.generateJwk(128);
 		jwk.setKeyId("testkid");
 		
 		TokenRequest req = new TokenRequest();
@@ -91,8 +91,10 @@ public class TokenResourceTest {
 		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
+		
+		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
-		TestUtils.validateToken(response.getPayload(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
 	}
 	
 
@@ -113,9 +115,9 @@ public class TokenResourceTest {
 
 		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 
-		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
+		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
-		TestUtils.validateToken(response.getPayload(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
 	}
 	
 

@@ -171,7 +171,7 @@ public class TokenRequest {
 				     + "  \"aud\" : \"" + aud + "\",";
 					
 					if(key != null) {
-					     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
+					     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE) + ",";
 					}
 					
 					json += "  \"client_id\" : \"" + client_id + "\","

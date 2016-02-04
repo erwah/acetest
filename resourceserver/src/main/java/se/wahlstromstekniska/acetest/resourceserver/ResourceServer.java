@@ -4,8 +4,6 @@ import org.apache.log4j.Logger;
 
 public class ResourceServer {
 	
-	private static ResourceServerConfiguration config = ResourceServerConfiguration.getInstance();
-
 	final static Logger logger = Logger.getLogger(ResourceServer.class);
 
     static DTLSServer dtlsServer = null;
