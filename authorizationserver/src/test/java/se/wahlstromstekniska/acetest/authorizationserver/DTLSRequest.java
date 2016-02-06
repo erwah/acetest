@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 
 import org.eclipse.californium.core.coap.Request;
@@ -16,6 +17,9 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
 
 public class DTLSRequest {
 			
@@ -60,7 +64,7 @@ public class DTLSRequest {
 
 		DTLSConnector dtlsconnector = new DTLSConnector(builder.build(), null);
 
-		NetworkConfig nc = NetworkConfig.getStandard().setInt("COAP_SECURE_PORT", 15684);
+		NetworkConfig nc = NetworkConfig.getStandard().setInt("COAP_SECURE_PORT", 15686);
 
 		dtlsEndpoint = new CoapEndpoint(dtlsconnector, nc);
 		dtlsEndpoint.start();
@@ -115,4 +119,53 @@ public class DTLSRequest {
 		return response;
 	}	
 	
+
+	public static Response dtlsRPKRequest(String uri, String method, byte[] payload, int contentFormat, JsonWebKey popKey) throws Exception {
+
+		Request request = Utils.newRequest(method);
+		request.setURI(uri);
+		request.setPayload(payload);
+		request.getOptions().setContentFormat(contentFormat);
+
+		// load trust store
+		KeyStore trustStore = KeyStore.getInstance("JKS");
+		InputStream inTrust = new FileInputStream(config.getTrustStoreLocation());
+		trustStore.load(inTrust, config.getTrustStorePassword().toCharArray());
+		// load multiple certificates if needed
+		Certificate[] trustedCertificates = new Certificate[1];
+		trustedCertificates[0] = trustStore.getCertificate("root");
+
+		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
+
+		builder.setTrustStore(trustedCertificates);
+
+		PublicKey publicKey = null;
+		PrivateKey privateKey = null;
+		
+		if(popKey.getKeyType().equalsIgnoreCase("ec")) {
+			EllipticCurveJsonWebKey ecPopKey = (EllipticCurveJsonWebKey) popKey;
+			privateKey = ecPopKey.getPrivateKey();
+			publicKey = ecPopKey.getPublicKey();			
+		}
+		else if(popKey.getKeyType().equalsIgnoreCase("rsa")) {
+			RsaJsonWebKey rsaPopKey = (RsaJsonWebKey) popKey;
+			privateKey = rsaPopKey.getPrivateKey();
+			publicKey = rsaPopKey.getPublicKey();			
+		}
+		
+		builder.setIdentity(privateKey, publicKey);
+		
+		DTLSConnector dtlsconnector = new DTLSConnector(builder.build(), null);
+
+		NetworkConfig nc = NetworkConfig.getStandard().setInt("COAP_SECURE_PORT", 15685);
+
+		dtlsEndpoint = new CoapEndpoint(dtlsconnector, nc);
+		dtlsEndpoint.start();
+
+		// execute request
+		request.send(dtlsEndpoint);
+		Response response = request.waitForResponse();
+		
+		return response;
+	}		
 }

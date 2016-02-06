@@ -11,12 +11,12 @@ import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey clientsPublicKey, String pskIdentity) throws Exception {
+	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey popKey, String pskIdentity) throws Exception {
 
 		AccessToken token = new AccessToken();
 		token.setAudience(aud);
 		token.setScopes(scopes);
-		token.setKey(clientsPublicKey);
+		token.setKey(popKey);
 		
 	    // add the claims for aud, issuedAt
 	    JwtClaims claims = new JwtClaims();
@@ -35,7 +35,7 @@ public class JWT {
 
 	    String claimsJson = claims.toJson();
 
-	    String cnf = "\"cnf\": {\"jwk\":" + clientsPublicKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
+	    String cnf = "\"cnf\": {\"jwk\":" + popKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
 	    // TODO: this is just a quick fix to handle objects in JwtClaims. Remove scary parsing.
 	    
 	    // remove last } sign

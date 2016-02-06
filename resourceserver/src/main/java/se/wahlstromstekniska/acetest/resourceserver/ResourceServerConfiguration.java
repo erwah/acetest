@@ -3,6 +3,8 @@ package se.wahlstromstekniska.acetest.resourceserver;
 
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.security.PublicKey;
+import java.util.ArrayList;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -40,9 +42,12 @@ public class ResourceServerConfiguration {
 	
 	private String configFilePath = "/resource_server_config.json";
 	
-	// TODO: Handle life cycle management of keys
+	// TODO: Handle life cycle management of keys, add tokens right next to the public keys
 	private InMemoryPskStore pskStorage = new InMemoryPskStore();
-	
+
+	// TODO: Handle life cycle management of keys, add tokens right next to the public keys
+	private ArrayList<PublicKey> publicKeyStorage = new ArrayList<PublicKey>();
+
 	
 	protected ResourceServerConfiguration() {
 
@@ -164,6 +169,14 @@ public class ResourceServerConfiguration {
 
 	public void setPskStorage(InMemoryPskStore pskStorage) {
 		this.pskStorage = pskStorage;
+	}
+
+	public ArrayList<PublicKey> getPublicKeyStorage() {
+		return publicKeyStorage;
+	}
+
+	public void setPublicKeyStorage(ArrayList<PublicKey> publicKeyStorage) {
+		this.publicKeyStorage = publicKeyStorage;
 	}
 
 }

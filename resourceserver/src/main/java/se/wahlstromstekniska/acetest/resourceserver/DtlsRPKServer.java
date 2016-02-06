@@ -1,4 +1,5 @@
-package se.wahlstromstekniska.acetest.authorizationserver;
+package se.wahlstromstekniska.acetest.resourceserver;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.Inet4Address;
@@ -9,7 +10,6 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.logging.Level;
 
-import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
@@ -17,42 +17,19 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.ScandiumLogger;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.pskstore.InMemoryPskStore;
 
-import se.wahlstromstekniska.acetest.authorizationserver.resource.IntrospectResource;
-import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResource;
+public class DtlsRPKServer extends CoapServer {
 
-
-public class CoAPSAuthorizationServer extends CoapServer {
-
-	private static ServerConfiguration config = ServerConfiguration.getInstance();
-
-	final static Logger logger = Logger.getLogger(CoAPSAuthorizationServer.class);
-
-    static CoAPSAuthorizationServer server = null;
+	private static ResourceServerConfiguration config = ResourceServerConfiguration.getInstance();
 
 	static {
 		ScandiumLogger.initialize();
 		ScandiumLogger.setLevel(Level.INFO);
 	}
 
-
-	public static void main(String[] args) {
-        try {
-            server = new CoAPSAuthorizationServer();
-        	server.start();
-        } catch (Exception e) {
-            logger.error("Failed to initialize server.", e);
-        }
-	}
-	
-    public CoAPSAuthorizationServer() throws Exception {
+    public DtlsRPKServer() throws Exception {
 	    
-        add(new TokenResource());
-        add(new IntrospectResource());
-
-	    InMemoryPskStore pskStore = new InMemoryPskStore();
-	    pskStore.setKey("Client_identity", config.getPsk().getBytes());
+        add(new TemperatureResource());
 	    
 		InputStream in = null;
 
@@ -70,13 +47,11 @@ public class CoAPSAuthorizationServer extends CoapServer {
 		Certificate[] trustedCertificates = new Certificate[1];
 		trustedCertificates[0] = trustStore.getCertificate("root");
 
-
 		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(config.getCoapsPort()));
 		builder.setClientAuthenticationRequired(true);
-		builder.setPskStore(pskStore);
+		// use the global in memory psk key store from the global config object
+		builder.setTrustedPublicKeysStore(config.getPublicKeyStorage());
 		builder.setIdentity((PrivateKey)keyStore.getKey("server", config.getKeyStorePassword().toCharArray()), keyStore.getCertificateChain("server"), true);
-		builder.setTrustStore(trustedCertificates);
-		
 		
 		DTLSConnector connector = new DTLSConnector(builder.build(), null);
 
@@ -90,7 +65,7 @@ public class CoAPSAuthorizationServer extends CoapServer {
 				EndpointManager.getEndpointManager().setDefaultSecureEndpoint(endpoint);
 			}
 		}
-    }
-
+		
+	}
 
 }

@@ -25,14 +25,16 @@
 			"tokenformat":"JWT",
 			"csp" : "DLTS",
 			"authorizedClients" : ["testclient1", "testclient2" ],
-			"scopes" : "read write"
+			"scopes" : "read write",
+			"transportEncryption" : "dtls-psk"
 		},
 		{
 			"aud":"testRS2",
 			"tokenformat":"CWT",
 			"csp" : "OBJECTSECURITY",
 			"authorizedClients" : ["testclient1" ],
-			"scopes" : "read"
+			"scopes" : "read",
+			"transportEncryption" : "dtls-rpk"
 		}
 	]
 }

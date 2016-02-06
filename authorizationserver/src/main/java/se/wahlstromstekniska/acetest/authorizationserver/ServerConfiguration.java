@@ -79,7 +79,22 @@ public class ServerConfiguration {
 	    	    else {
 		            rs.setTokenFormat(ResourceServer.TOKEN_FORMAT_CWT);
 	    	    }
+
+	    	    String transportEncryption = item.getString("transportEncryption");
+	    	    if("dtls-psk".equals(transportEncryption)) {
+		            rs.setTransportEncryption(ResourceServer.TRANSPORT_ENCRYPTION_DTLS_PSK);
+	    	    }
+	    	    if("dtls-rpk".equals(transportEncryption)) {
+		            rs.setTransportEncryption(ResourceServer.TRANSPORT_ENCRYPTION_DTLS_RPK);
+	    	    }
+	    	    if("dtls-cert".equals(transportEncryption)) {
+		            rs.setTransportEncryption(ResourceServer.TRANSPORT_ENCRYPTION_DTLS_CERT);
+	    	    }
+	    	    if("oscon".equals(transportEncryption)) {
+		            rs.setTransportEncryption(ResourceServer.TRANSPORT_ENCRYPTION_OSCON);
+	    	    }
 	    	    
+
 	    	    String scopes = item.getString("scopes");
 	    	    rs.setScopes(scopes);
 

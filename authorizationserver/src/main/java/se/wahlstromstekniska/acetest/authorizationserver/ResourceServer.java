@@ -6,6 +6,11 @@ public class ResourceServer {
 
 	public static int TOKEN_FORMAT_JWT = 0;
 	public static int TOKEN_FORMAT_CWT = 1;
+
+	public static int TRANSPORT_ENCRYPTION_DTLS_PSK = 0;
+	public static int TRANSPORT_ENCRYPTION_DTLS_RPK = 1;
+	public static int TRANSPORT_ENCRYPTION_DTLS_CERT = 2;
+	public static int TRANSPORT_ENCRYPTION_OSCON = 3;
 	
 	private String aud;
 	private ArrayList<AccessToken> accessTokens = new ArrayList<AccessToken>();
@@ -13,6 +18,7 @@ public class ResourceServer {
 	private String csp;
 	private int tokenformat;
 	private String scopes = new String();
+	private int transportEncryption = 0; 
 
 	public ResourceServer(String aud) {
 		this.aud = aud;
@@ -84,12 +90,20 @@ public class ResourceServer {
 		this.scopes = scopes;
 	}
 
+	public int getTransportEncryption() {
+		return transportEncryption;
+	}
+
+	public void setTransportEncryption(int transportEncryption) {
+		this.transportEncryption = transportEncryption;
+	}
+
 	@Override
 	public String toString() {
 		return "ResourceServer [aud=" + aud + ", accessTokens=" + accessTokens
 				+ ", authorizedClients=" + authorizedClients + ", csp=" + csp
-				+ ", tokenformat=" + tokenformat + ", scopes=" + scopes + "]";
+				+ ", tokenformat=" + tokenformat + ", scopes=" + scopes
+				+ ", transportEncryption=" + transportEncryption + "]";
 	}
 	
-
 }

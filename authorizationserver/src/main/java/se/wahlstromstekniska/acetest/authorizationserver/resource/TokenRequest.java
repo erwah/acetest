@@ -170,16 +170,21 @@ public class TokenRequest {
 				     + "  \"grant_type\" : \"" + grant_type + "\","
 				     + "  \"aud\" : \"" + aud + "\",";
 					
-					if(key != null) {
-					     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE) + ",";
-					}
-					
-					json += "  \"client_id\" : \"" + client_id + "\","
+			if(key != null) {
+				if(key.getKeyType().equals("oct")) {
+					json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.INCLUDE_SYMMETRIC) + ",";
+				}
+				else {
+				     json += "  \"key\" : " + key.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY) + ",";
+				}
+			}
+			
+			json += "  \"client_id\" : \"" + client_id + "\","
 				     + "  \"client_secret\" : \"" + client_secret + "\","
 				     + "  \"scopes\" : \"" + scopes + "\""
 				   	 + "}";
 
-					return json.getBytes();
+			return json.getBytes();
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
 			return "not implemented".getBytes();

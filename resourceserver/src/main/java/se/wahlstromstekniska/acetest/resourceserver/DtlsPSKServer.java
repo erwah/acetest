@@ -18,7 +18,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.ScandiumLogger;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
-public class DTLSServer extends CoapServer {
+public class DtlsPSKServer extends CoapServer {
 
 	private static ResourceServerConfiguration config = ResourceServerConfiguration.getInstance();
 
@@ -27,7 +27,7 @@ public class DTLSServer extends CoapServer {
 		ScandiumLogger.setLevel(Level.INFO);
 	}
 
-    public DTLSServer() throws Exception {
+    public DtlsPSKServer() throws Exception {
 	    
         add(new TemperatureResource());
 	    
@@ -49,12 +49,12 @@ public class DTLSServer extends CoapServer {
 
 
 		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(config.getCoapsPort()));
-		
-		// use the global in memory psk key store from the global config object
-		builder.setPskStore(config.getPskStorage());
+		builder.setClientAuthenticationRequired(true);
 		builder.setIdentity((PrivateKey)keyStore.getKey("server", config.getKeyStorePassword().toCharArray()), keyStore.getCertificateChain("server"), true);
 		builder.setTrustStore(trustedCertificates);
-		
+
+		// use the global in memory psk key store thats populated using the access tokens from the global config object
+		builder.setPskStore(config.getPskStorage());
 		
 		DTLSConnector connector = new DTLSConnector(builder.build(), null);
 

@@ -1,5 +1,7 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
+import java.math.BigInteger;
+
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -7,6 +9,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.OctJwkGenerator;
+import org.jose4j.jwk.RsaJwkGenerator;
 import org.jose4j.keys.EllipticCurves;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,12 +76,11 @@ public class TokenResourceTest {
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
 	}
 	
-
 	@Test
-	public void testSuccessClientGeneratedKeys() throws Exception {
+	public void testSuccessClientGeneratedECKeys() throws Exception {
 
-		JsonWebKey jwk = OctJwkGenerator.generateJwk(128);
-		jwk.setKeyId("testkid");
+		JsonWebKey popKey = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+		popKey.setKeyId("testkid");
 		
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
@@ -86,7 +88,7 @@ public class TokenResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 		req.setScopes("read write");
-		req.setKey(jwk);
+		req.setKey(popKey);
 
 		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
 
@@ -96,7 +98,30 @@ public class TokenResourceTest {
 
 		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
 	}
-	
+
+	@Test
+	public void testSuccessClientGeneratedRSAKeys() throws Exception {
+
+		JsonWebKey popKey = RsaJwkGenerator.generateJwk(2048);
+		popKey.setKeyId("testkid");
+		
+		TokenRequest req = new TokenRequest();
+		req.setGrantType("client_credentials");
+		req.setAud("tempSensorInLivingRoom");
+		req.setClientID("myclient");
+		req.setClientSecret("qwerty");
+		req.setScopes("read write");
+		req.setKey(popKey);
+
+		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
+
+		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
+		
+		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
+
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+	}
+
 
 	@Test
 	public void testScopes() throws Exception {

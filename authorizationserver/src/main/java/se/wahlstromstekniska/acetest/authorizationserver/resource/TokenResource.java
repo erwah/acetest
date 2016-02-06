@@ -97,15 +97,14 @@ public class TokenResource extends CoapResource {
 										// get authorization servers signing key
 				        				JWT jwt = new JWT();
 	
-										// TODO: Get a better key generation, this is just copy paste from jose4j examples
 				        				// get key from client and if none, generate keys on AS and return encrypted keys to client
-										JsonWebKey clientsPublicKey = tokenRequest.getRawKey(); 
-										if(clientsPublicKey == null) {
-											clientsPublicKey = OctJwkGenerator.generateJwk(128);
+										JsonWebKey popKey = tokenRequest.getRawKey(); 
+										if(popKey == null) {
+											popKey = OctJwkGenerator.generateJwk(128);
 											
 											// generate a unique kid for the newly generated key
 										    String kid = new BigInteger(130, random).toString(32);
-											clientsPublicKey.setKeyId(kid);
+											popKey.setKeyId(kid);
 										}
 										
 										// generate a unique PSK identity that's used by by the client when accessing the resource server
@@ -113,8 +112,8 @@ public class TokenResource extends CoapResource {
 										// TODO: encrypt the key if C to RS communication is not encrypted by TLS/DTLS.
 										
 										
-										token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), clientsPublicKey, pskIdentity);
-										serializedJwe = clientsPublicKey.toJson(OutputControlLevel.INCLUDE_PRIVATE);
+										token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, pskIdentity);
+										serializedJwe = popKey.toJson(OutputControlLevel.INCLUDE_SYMMETRIC);
 										
 									}
 									else {

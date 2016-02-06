@@ -1,11 +1,17 @@
 package se.wahlstromstekniska.acetest.resourceserver;
 
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.OctetSequenceJsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -50,8 +56,6 @@ public class AuthzInfoResource extends CoapResource {
     		        .setVerificationKey(asConfig.getSignAndEncryptKey().getPublicKey())
     		        .build();
     	
-				OctetSequenceJsonWebKey ojwk = null;
-
     		    //  Validate the JWT and process it to the Claims
     		    JwtClaims jwtClaims;
 					jwtClaims = jwtConsumer.processToClaims(new String(accessToken));
@@ -62,18 +66,37 @@ public class AuthzInfoResource extends CoapResource {
     		    	JSONObject jsonObject = new JSONObject(rawJson).getJSONObject("cnf").getJSONObject("jwk");
 
     				JsonWebKey jwk = JsonWebKey.Factory.newJwk(jsonObject.toString());
-    				if(jwk.getKeyType().equalsIgnoreCase("oct")) {
-    					ojwk = new OctetSequenceJsonWebKey(jwk.getKey());
+    				String keyType = jwk.getKeyType();
+    				
+    				if(keyType.equalsIgnoreCase("oct")) {
+    					// this is a symmetric key, either use it as a PSK or with object security
+    					OctetSequenceJsonWebKey ojwk = new OctetSequenceJsonWebKey(jwk.getKey());
+        				pskIdentity = (String) jwtClaims.getClaimValue("psk_identity");
+
+    	    		    // add psk key/psk identity to key storage
+    	    		    rsConfig.getPskStorage().setKey(pskIdentity, ojwk.getOctetSequence());
+    	    		    
+    	    		    // TODO: add handling for object security
+    				}
+    				else {
+    					PublicKey publicKey = null;
+    					
+    					if(keyType.equalsIgnoreCase("ec")) {
+    						EllipticCurveJsonWebKey ecjwk = new EllipticCurveJsonWebKey((ECPublicKey) jwk.getKey());
+    						publicKey = ecjwk.getPublicKey();
+    					}
+    					else if(keyType.equalsIgnoreCase("rsa")) {
+    						RsaJsonWebKey rsajwk = new RsaJsonWebKey((RSAPublicKey) jwk.getKey());
+    						publicKey = rsajwk.getPublicKey();
+    					}
+    					
+    					rsConfig.getPublicKeyStorage().add(publicKey);
+    				
+    	    		    // TODO: add handling for object security
     				}
     				
-    				pskIdentity = (String) jwtClaims.getClaimValue("psk_identity");
-    				
-    				// TODO: add other key types
     		    }
     		    
-    		    // add psk key/psk identity to key storage
-    		    rsConfig.getPskStorage().setKey(pskIdentity, ojwk.getOctetSequence());
-
     		    Exchange.respond(exchange, ResponseCode.CREATED);
 
 			} catch (InvalidJwtException e) {

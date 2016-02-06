@@ -6,12 +6,12 @@ public class ResourceServer {
 	
 	final static Logger logger = Logger.getLogger(ResourceServer.class);
 
-    static DTLSServer dtlsServer = null;
+    static DtlsRPKServer dtlsServer = null;
     static AuthInfoServer authzInfoServer = null;
 
 	public static void main(String[] args) {
         try {
-        	dtlsServer = new DTLSServer();
+        	dtlsServer = new DtlsRPKServer();
         	dtlsServer.start();
 
         	authzInfoServer = new AuthInfoServer();
