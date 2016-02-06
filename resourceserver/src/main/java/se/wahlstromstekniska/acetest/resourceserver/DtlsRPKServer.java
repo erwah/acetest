@@ -61,7 +61,6 @@ public class DtlsRPKServer extends CoapServer {
 				@SuppressWarnings("static-access")
 				CoapEndpoint endpoint = new CoapEndpoint(connector, new NetworkConfig().getStandard()); 
 				addEndpoint(endpoint);
-				// TODO: make sure this was placed correctly
 				EndpointManager.getEndpointManager().setDefaultSecureEndpoint(endpoint);
 			}
 		}

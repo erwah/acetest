@@ -57,8 +57,6 @@ public class ServerConfiguration {
 			IOUtils.copy(configIS,  configWriter, "UTF-8");
 			setProperties(new JSONObject(configWriter.toString()));
 			
-			// TODO: validate config
-
 			// load resource servers
 			logger.debug("Loading configured resource servers.");
 

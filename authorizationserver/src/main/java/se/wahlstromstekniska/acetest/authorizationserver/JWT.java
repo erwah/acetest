@@ -35,8 +35,8 @@ public class JWT {
 
 	    String claimsJson = claims.toJson();
 
-	    String cnf = "\"cnf\": {\"jwk\":" + popKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
 	    // TODO: this is just a quick fix to handle objects in JwtClaims. Remove scary parsing.
+	    String cnf = "\"cnf\": {\"jwk\":" + popKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
 	    
 	    // remove last } sign
 	    claimsJson = claimsJson.substring(0, claimsJson.length()-1);

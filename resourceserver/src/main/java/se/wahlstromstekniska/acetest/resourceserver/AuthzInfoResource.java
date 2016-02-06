@@ -75,8 +75,6 @@ public class AuthzInfoResource extends CoapResource {
 
     	    		    // add psk key/psk identity to key storage
     	    		    rsConfig.getPskStorage().setKey(pskIdentity, ojwk.getOctetSequence());
-    	    		    
-    	    		    // TODO: add handling for object security
     				}
     				else {
     					PublicKey publicKey = null;
@@ -91,8 +89,6 @@ public class AuthzInfoResource extends CoapResource {
     					}
     					
     					rsConfig.getPublicKeyStorage().add(publicKey);
-    				
-    	    		    // TODO: add handling for object security
     				}
     				
     		    }

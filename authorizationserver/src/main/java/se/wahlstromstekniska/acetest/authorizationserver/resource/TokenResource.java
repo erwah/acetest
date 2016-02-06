@@ -107,9 +107,10 @@ public class TokenResource extends CoapResource {
 											popKey.setKeyId(kid);
 										}
 										
+										// TODO: ENCRYPT THE SYMMETRIC KEY IN BOTH TOKEN AND IN RESPONSE!!!!!!
+										
 										// generate a unique PSK identity that's used by by the client when accessing the resource server
 										pskIdentity = new BigInteger(130, random).toString(32);
-										// TODO: encrypt the key if C to RS communication is not encrypted by TLS/DTLS.
 										
 										
 										token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, pskIdentity);

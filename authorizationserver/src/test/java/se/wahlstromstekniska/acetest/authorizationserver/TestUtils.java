@@ -29,8 +29,6 @@ public class TestUtils {
 			    JwtClaims jwtClaims = jwtConsumer.processToClaims(new String(accessToken));
 			    
 			    Assert.assertTrue(jwtClaims.getAudience().contains(aud));
-			    
-			    // TODO: validate iss, iat....
 			}
 			catch (Exception e)
 			{

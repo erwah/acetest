@@ -2,17 +2,17 @@ package se.wahlstromstekniska.acetest.resourceserver;
 
 import org.apache.log4j.Logger;
 
-public class ResourceServer {
+public class ResourceServerRPK {
 	
-	final static Logger logger = Logger.getLogger(ResourceServer.class);
+	final static Logger logger = Logger.getLogger(ResourceServerRPK.class);
 
-    static DtlsRPKServer dtlsServer = null;
+    static DtlsRPKServer dtlsRPKServer = null;
     static AuthInfoServer authzInfoServer = null;
 
 	public static void main(String[] args) {
         try {
-        	dtlsServer = new DtlsRPKServer();
-        	dtlsServer.start();
+        	dtlsRPKServer = new DtlsRPKServer();
+        	dtlsRPKServer.start();
 
         	authzInfoServer = new AuthInfoServer();
         	authzInfoServer.start();
