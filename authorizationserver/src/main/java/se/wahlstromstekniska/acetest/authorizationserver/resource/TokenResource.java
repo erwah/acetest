@@ -105,6 +105,10 @@ public class TokenResource extends CoapResource {
 											// generate a unique kid for the newly generated key
 										    String kid = new BigInteger(130, random).toString(32);
 											popKey.setKeyId(kid);
+
+										}
+										else {
+											
 										}
 										
 										// TODO: ENCRYPT THE SYMMETRIC KEY IN BOTH TOKEN AND IN RESPONSE!!!!!!
@@ -123,10 +127,10 @@ public class TokenResource extends CoapResource {
 			        				
 									TokenResponse response = null;
 									if(tokenRequest.getRawKey() != null) {
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, null);
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, null, rs.getRPK());
 									}
 									else {
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), serializedJwe, pskIdentity);
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), serializedJwe, pskIdentity, null);
 									}
 			        				
 			        				byte[] responsePayload = response.toPayload(contentFormat);

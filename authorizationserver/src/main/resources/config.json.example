@@ -6,7 +6,8 @@
 		"trustStorePassword" : "XXX",
 		"keyStoreLocation" : "../certs/keyStore.jks",
 		"keyStorePassword" : "XXX",
-		"psk" : "XXX",
+		"pskIdentity" : "XXX",
+		"pskKey" : "XXX",
 		"signAndEncryptKey" : null
 	},
 	"clients" : [
@@ -26,15 +27,16 @@
 			"csp" : "DLTS",
 			"authorizedClients" : ["testclient1", "testclient2" ],
 			"scopes" : "read write",
-			"transportEncryption" : "dtls-psk"
-		},
+			"transportEncryption" : "dtls-psk",
+			"serverKey": {"kty":"EC","kid":"8vrbt0mlhluirpjj2h5mjg4u4r","x":"HhcGZh3i6HrcE1r8ANQcO4ZxtHlvDyvRcL0bdT_31sE","y":"jd5-IH8W1nGX4k350WsSyn0bvvcAEDP3bvNYCRr8Rz8","crv":"P-256"}},
 		{
 			"aud":"testRS2",
 			"tokenformat":"CWT",
 			"csp" : "OBJECTSECURITY",
 			"authorizedClients" : ["testclient1" ],
 			"scopes" : "read",
-			"transportEncryption" : "dtls-rpk"
+			"transportEncryption" : "dtls-rpk",
+			"serverKey": {"kty":"EC","kid":"8vrbt0mlhluirpjj2h5mjg4u4r","x":"HhcGZh3i6HrcE1r8ANQcO4ZxtHlvDyvRcL0bdT_31sE","y":"jd5-IH8W1nGX4k350WsSyn0bvvcAEDP3bvNYCRr8Rz8","crv":"P-256"}},
 		}
 	]
 }

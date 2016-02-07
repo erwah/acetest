@@ -41,8 +41,9 @@ public class ServerConfiguration {
 	private String keyStorePassword = null;
 	private String keyStoreLocation = null;
 
-	private String psk = null;
-	
+	private String pskIdentity = null;
+	private String pskKey = null;
+		
 	private EllipticCurveJsonWebKey signAndEncryptKey = null;
 	
 	private String configFilePath = "/config.json";
@@ -102,6 +103,10 @@ public class ServerConfiguration {
 	                rs.addAuthorizedClient(client);
 	        	}
 	        	
+		    	String rpk = item.getJSONObject("serverKey").toString();
+		    	EllipticCurveJsonWebKey rpkJWK = (EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(rpk);
+		    	rs.setRPK(rpkJWK);
+	        	
 	            resourceServers.add(rs);
 	    	}
 	    	
@@ -132,9 +137,10 @@ public class ServerConfiguration {
 	    	setKeyStoreLocation(getProperties().getJSONObject("server").getString("keyStoreLocation"));
 	    	setKeyStorePassword(getProperties().getJSONObject("server").getString("keyStorePassword"));
 
-	    	// load psk
+	    	// load psk identity used to connect to AS securely from the client
 	    	logger.debug("Loading PSK.");
-	    	setPsk(getProperties().getJSONObject("server").getString("psk"));
+	    	setPskKey(getProperties().getJSONObject("server").getString("pskKey"));
+	    	setPskIdentity(getProperties().getJSONObject("server").getString("pskIdentity"));
 
 	    	// load sign and encryption key
 	    	logger.debug("Loading sign and encryption key.");
@@ -259,14 +265,22 @@ public class ServerConfiguration {
 		this.keyStoreLocation = keyStoreLocation;
 	}
 
-	public String getPsk() {
-		return psk;
+	public String getPskIdentity() {
+		return pskIdentity;
 	}
 
-	public void setPsk(String psk) {
-		this.psk = psk;
+	public void setPskIdentity(String pskIdentity) {
+		this.pskIdentity = pskIdentity;
 	}
 
+	public String getPskKey() {
+		return pskKey;
+	}
+
+	public void setPskKey(String pskKey) {
+		this.pskKey = pskKey;
+	}
+	
 	public EllipticCurveJsonWebKey getSignAndEncryptKey() {
 		return signAndEncryptKey;
 	}
@@ -274,5 +288,5 @@ public class ServerConfiguration {
 	public void setSignAndEncryptKey(EllipticCurveJsonWebKey signAndEncryptKey) {
 		this.signAndEncryptKey = signAndEncryptKey;
 	}
-	
+
 }

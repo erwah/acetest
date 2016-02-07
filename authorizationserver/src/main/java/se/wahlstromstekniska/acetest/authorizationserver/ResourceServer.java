@@ -2,6 +2,9 @@ package se.wahlstromstekniska.acetest.authorizationserver;
 
 import java.util.ArrayList;
 
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
+import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
+
 public class ResourceServer {
 
 	public static int TOKEN_FORMAT_JWT = 0;
@@ -19,6 +22,7 @@ public class ResourceServer {
 	private int tokenformat;
 	private String scopes = new String();
 	private int transportEncryption = 0; 
+	private EllipticCurveJsonWebKey rpk = null; 
 
 	public ResourceServer(String aud) {
 		this.aud = aud;
@@ -98,12 +102,21 @@ public class ResourceServer {
 		this.transportEncryption = transportEncryption;
 	}
 
+	public EllipticCurveJsonWebKey getRPK() {
+		return rpk;
+	}
+
+	public void setRPK(EllipticCurveJsonWebKey rpk) {
+		this.rpk = rpk;
+	}
+
 	@Override
 	public String toString() {
 		return "ResourceServer [aud=" + aud + ", accessTokens=" + accessTokens
 				+ ", authorizedClients=" + authorizedClients + ", csp=" + csp
 				+ ", tokenformat=" + tokenformat + ", scopes=" + scopes
-				+ ", transportEncryption=" + transportEncryption + "]";
+				+ ", transportEncryption=" + transportEncryption
+				+ ", rpk=" + rpk.toJson(OutputControlLevel.PUBLIC_ONLY) + "]";
 	}
 	
 }

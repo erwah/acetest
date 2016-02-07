@@ -1,12 +1,7 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
 import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
@@ -52,31 +47,11 @@ public class CoAPSAuthorizationServer extends CoapServer {
         add(new IntrospectResource());
 
 	    InMemoryPskStore pskStore = new InMemoryPskStore();
-	    pskStore.setKey("Client_identity", config.getPsk().getBytes());
-	    
-		InputStream in = null;
-
-		// load the key store
-		KeyStore keyStore = KeyStore.getInstance("JKS");
-		in = new FileInputStream(config.getKeyStoreLocation());
-		keyStore.load(in, config.getKeyStorePassword().toCharArray());
-
-		// load the trust store
-		KeyStore trustStore = KeyStore.getInstance("JKS");
-		InputStream inTrust = new FileInputStream(config.getTrustStoreLocation());
-		trustStore.load(inTrust, config.getTrustStorePassword().toCharArray());
-		
-		// You can load multiple certificates if needed
-		Certificate[] trustedCertificates = new Certificate[1];
-		trustedCertificates[0] = trustStore.getCertificate("root");
-
+	    pskStore.setKey(config.getPskIdentity(), config.getPskKey().getBytes());
 
 		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(config.getCoapsPort()));
 		builder.setClientAuthenticationRequired(true);
 		builder.setPskStore(pskStore);
-		builder.setIdentity((PrivateKey)keyStore.getKey("server", config.getKeyStorePassword().toCharArray()), keyStore.getCertificateChain("server"), true);
-		builder.setTrustStore(trustedCertificates);
-		
 		
 		DTLSConnector connector = new DTLSConnector(builder.build(), null);
 
@@ -90,6 +65,5 @@ public class CoAPSAuthorizationServer extends CoapServer {
 			}
 		}
     }
-
 
 }

@@ -1,22 +1,16 @@
 package se.wahlstromstekniska.acetest.client;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.jwk.OctetSequenceJsonWebKey;
-import org.jose4j.keys.EllipticCurves;
-import org.jose4j.lang.JoseException;
 
 import se.wahlstromstekniska.acetest.authorizationserver.Constants;
-import se.wahlstromstekniska.acetest.authorizationserver.DTLSRequest;
+import se.wahlstromstekniska.acetest.authorizationserver.DTLSUtils;
 import se.wahlstromstekniska.acetest.authorizationserver.ServerConfiguration;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResponse;
@@ -30,8 +24,6 @@ public class ClientPSK {
 	private static ResourceServerConfiguration rsConfig = ResourceServerConfiguration.getInstance();
 	
 	final static Logger logger = Logger.getLogger(ClientPSK.class);
-
-	private static SecureRandom random = new SecureRandom();
 
 	public static void main(String[] args) {
 		try {
@@ -57,7 +49,7 @@ public class ClientPSK {
 		try {
 			
 			// let AS generate key
-			response = DTLSRequest.dtlsRequest("coaps://localhost:"+asConfig.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);
+			response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+asConfig.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, asConfig.getPskIdentity(), asConfig.getPskKey().getBytes());
 			TokenResponse tokenResponse = new TokenResponse(response.getPayload(), response.getOptions().getContentFormat());
 			String accessToken = tokenResponse.getAccessToken();
 			String keyString = tokenResponse.getKey();
@@ -87,10 +79,9 @@ public class ClientPSK {
 			logger.info("code: " + authzInfoResponse.getCode());
 			logger.info("payload: " + authzInfoResponse.getPayloadString());
 
-
 			if(authzInfoResponse.getCode() == ResponseCode.CREATED) {
 				// get the temperature
-				response = DTLSRequest.dtlsRequest("coaps://localhost:"+rsConfig.getCoapsPort()+"/temperature", "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, pskIdentity, ojwk.getOctetSequence());
+				response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+rsConfig.getCoapsPort()+"/temperature", "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, pskIdentity, ojwk.getOctetSequence());
 				TemperatureResponse temperatureResponse = new TemperatureResponse(response.getPayload(), response.getOptions().getContentFormat());
 				logger.info("Temp: " + temperatureResponse);
 			}

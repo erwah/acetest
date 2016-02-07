@@ -69,7 +69,7 @@ public class TokenResourceTest {
 		req.setClientSecret("qwerty");
 		req.setScopes("read write");
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 
 		System.out.println(response);
 		System.out.println("Time elapsed (ms): " + response.getRTT());
@@ -90,7 +90,7 @@ public class TokenResourceTest {
 		req.setScopes("read write");
 		req.setKey(popKey);
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
 		
@@ -113,7 +113,7 @@ public class TokenResourceTest {
 		req.setScopes("read write");
 		req.setKey(popKey);
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 
 		Assert.assertEquals(ResponseCode.CONTENT, response.getCode());
 		
@@ -138,7 +138,7 @@ public class TokenResourceTest {
 		req.setScopes("read write");
 		req.setKey(jwk);
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 
 		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
@@ -230,7 +230,7 @@ public class TokenResourceTest {
 	
 	private void callBadRequestEndpointCall(byte[] payload, String expectedError, int contentType) throws Exception {
 
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", payload, contentType);
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", payload, contentType, config.getPskIdentity(), config.getPskKey().getBytes());
 		
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 		

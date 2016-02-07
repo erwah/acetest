@@ -1,13 +1,10 @@
 package se.wahlstromstekniska.acetest.resourceserver;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.cert.Certificate;
+import java.security.PublicKey;
 import java.util.logging.Level;
 
 import org.eclipse.californium.core.CoapServer;
@@ -31,27 +28,15 @@ public class DtlsRPKServer extends CoapServer {
 	    
         add(new TemperatureResource());
 	    
-		InputStream in = null;
-
-		// load the key store
-		KeyStore keyStore = KeyStore.getInstance("JKS");
-		in = new FileInputStream(config.getKeyStoreLocation());
-		keyStore.load(in, config.getKeyStorePassword().toCharArray());
-
-		// load the trust store
-		KeyStore trustStore = KeyStore.getInstance("JKS");
-		InputStream inTrust = new FileInputStream(config.getTrustStoreLocation());
-		trustStore.load(inTrust, config.getTrustStorePassword().toCharArray());
-		
-		// You can load multiple certificates if needed
-		Certificate[] trustedCertificates = new Certificate[1];
-		trustedCertificates[0] = trustStore.getCertificate("root");
-
 		DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(config.getCoapsPort()));
 		builder.setClientAuthenticationRequired(true);
 		// use the global in memory psk key store from the global config object
 		builder.setTrustedPublicKeysStore(config.getPublicKeyStorage());
-		builder.setIdentity((PrivateKey)keyStore.getKey("server", config.getKeyStorePassword().toCharArray()), keyStore.getCertificateChain("server"), true);
+		
+		PublicKey publicKey = config.getRpk().getPublicKey();
+		PrivateKey privateKey = config.getRpk().getPrivateKey();
+		
+		builder.setIdentity(privateKey, publicKey);
 		
 		DTLSConnector connector = new DTLSConnector(builder.build(), null);
 

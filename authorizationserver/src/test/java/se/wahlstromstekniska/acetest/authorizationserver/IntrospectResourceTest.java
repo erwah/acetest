@@ -52,7 +52,7 @@ public class IntrospectResourceTest {
 		createReq.setKey(jwk);
 
 
-		Response createResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", createReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);		
+		Response createResponse = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", createReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 		Assert.assertEquals(ResponseCode.CONTENT, createResponse.getCode());
 		
 		TokenResponse tokenResponse = new TokenResponse(createResponse.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
@@ -63,7 +63,7 @@ public class IntrospectResourceTest {
 		introspectionReq.setClientID("myclient");
 		introspectionReq.setClientSecret("qwerty");
 		
-		Response introspectionResponse = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", introspectionReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);	
+		Response introspectionResponse = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", introspectionReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());	
 
 		Assert.assertEquals(introspectionResponse.getCode(), ResponseCode.CONTENT);
 
@@ -144,7 +144,7 @@ public class IntrospectResourceTest {
 		req.setClientID("myclient");
 		req.setClientSecret("qwerty");
 		
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);	
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());	
 
 		Assert.assertEquals(response.getCode(), ResponseCode.CONTENT);
 
@@ -153,7 +153,7 @@ public class IntrospectResourceTest {
 	}	
 
 	private void callBadRequestEndpointCall(byte[] payload, String expectedError, int contentFormat) throws Exception {
-		Response response = DTLSRequest.dtlsRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", payload, contentFormat);
+		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", payload, contentFormat, config.getPskIdentity(), config.getPskKey().getBytes());
 
 		Assert.assertEquals(response.getCode(), ResponseCode.BAD_REQUEST);
 		

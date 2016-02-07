@@ -3,6 +3,8 @@ package se.wahlstromstekniska.acetest.authorizationserver.resource;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
+import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.AccessToken;
@@ -17,7 +19,16 @@ public class TokenResponse {
 	// TODO: It's right now a JWK serialized as a string, but we need to handle COSE in a good way also.
 	private String key = null;
 	private String pskIdentity = null;
+	private EllipticCurveJsonWebKey rpk = null;
 	
+	public EllipticCurveJsonWebKey getRpk() {
+		return rpk;
+	}
+
+	public void setRpk(EllipticCurveJsonWebKey rpk) {
+		this.rpk = rpk;
+	}
+
 	public TokenResponse(byte[] payload, int contentFormat) throws Exception {
 		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = new String(payload, StandardCharsets.UTF_8);
@@ -31,6 +42,11 @@ public class TokenResponse {
 			if(obj.has("psk_identity")) {
 				setPskIdentity(obj.getString("psk_identity"));
 			}
+			if(obj.has("rpk")) {
+		    	String rpk = obj.getJSONObject("rpk").toString();
+		    	EllipticCurveJsonWebKey rpkJWK = (EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(rpk);
+		    	setRpk(rpkJWK);
+			}
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
 			throw new Exception("Not implemented yet");
@@ -40,12 +56,13 @@ public class TokenResponse {
 		}		
 	}
 	
-	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key, String pskIdentity) {
+	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key, String pskIdentity, EllipticCurveJsonWebKey rpk) {
 		this.accessToken = accessToken.getAccessToken();
 		this.tokenType = tokenType;
 		this.csp = csp;
 		this.key = key;
 		this.pskIdentity = pskIdentity;
+		this.rpk = rpk;
 	}
 
 	public byte[] toPayload(int contentFormat) {
@@ -62,6 +79,10 @@ public class TokenResponse {
 
 			if(pskIdentity != null) {
 				json += ",\n\t\"psk_identity\" : \"" + pskIdentity + "\"";
+			}
+
+			if(rpk != null) {
+				json += ",\n\t\"rpk\" : " + rpk.toJson(OutputControlLevel.PUBLIC_ONLY) + "";
 			}
 
 			json += "\n}";
@@ -108,4 +129,6 @@ public class TokenResponse {
 	public void setPskIdentity(String pskIdentity) {
 		this.pskIdentity = pskIdentity;
 	}
+
+
 }

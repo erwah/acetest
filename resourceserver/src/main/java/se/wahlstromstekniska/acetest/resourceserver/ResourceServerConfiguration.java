@@ -9,18 +9,11 @@ import java.util.ArrayList;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.californium.scandium.dtls.pskstore.InMemoryPskStore;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.ServerConfiguration;
 
-/**
- * Reads properties and resource servers keys for DTLS.
- * WARNING: Class uses a insecure key file based key storage and this is NOT recommended 
- * to be used in production.
- * 
- * @author erikw
- *
- */
 public class ResourceServerConfiguration {
 
 	final static Logger logger = Logger.getLogger(ResourceServerConfiguration.class);
@@ -30,12 +23,6 @@ public class ResourceServerConfiguration {
 	private int coapPort = 6683;
 	private int coapsPort = 6684;
 	
-	private String trustStorePassword = null;
-	private String trustStoreLocation = null;
-
-	private String keyStorePassword = null;
-	private String keyStoreLocation = null;
-
 	private String psk = null;
 		
 	private static JSONObject properties = null;
@@ -47,6 +34,8 @@ public class ResourceServerConfiguration {
 
 	// TODO: Handle life cycle management of keys, add tokens right next to the public keys
 	private ArrayList<PublicKey> publicKeyStorage = new ArrayList<PublicKey>();
+
+	private EllipticCurveJsonWebKey rpk = null;
 
 	
 	protected ResourceServerConfiguration() {
@@ -64,20 +53,10 @@ public class ResourceServerConfiguration {
 	    	setCoapPort(getProperties().getJSONObject("server").getInt("coapPort"));
 	    	setCoapsPort(getProperties().getJSONObject("server").getInt("coapsPort"));
 
-	    	// load trust store
-	    	logger.debug("Loading trust store information.");
-	    	setTrustStoreLocation(getProperties().getJSONObject("server").getString("trustStoreLocation"));
-	    	setTrustStorePassword(getProperties().getJSONObject("server").getString("trustStorePassword"));
+	    	String key = getProperties().getJSONObject("server").getJSONObject("rpk").toString();
+    		setRpk((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 
-	    	// load key store
-	    	logger.debug("Loading key store information.");
-	    	setKeyStoreLocation(getProperties().getJSONObject("server").getString("keyStoreLocation"));
-	    	setKeyStorePassword(getProperties().getJSONObject("server").getString("keyStorePassword"));
-
-	    	// load psk
-	    	logger.debug("Loading PSK.");
-	    	setPsk(getProperties().getJSONObject("server").getString("psk"));
-
+    		
 		} catch (Exception e) {
 			logger.fatal("Failed to parse configuration file: " + configFilePath);
 			System.exit(0);
@@ -123,38 +102,6 @@ public class ResourceServerConfiguration {
 		this.coapsPort = coapsPort;
 	}
 
-	public String getTrustStorePassword() {
-		return trustStorePassword;
-	}
-
-	public void setTrustStorePassword(String trustStorePassword) {
-		this.trustStorePassword = trustStorePassword;
-	}
-
-	public String getTrustStoreLocation() {
-		return trustStoreLocation;
-	}
-
-	public void setTrustStoreLocation(String trustStoreLocation) {
-		this.trustStoreLocation = trustStoreLocation;
-	}
-
-	public String getKeyStorePassword() {
-		return keyStorePassword;
-	}
-
-	public void setKeyStorePassword(String keyStorePassword) {
-		this.keyStorePassword = keyStorePassword;
-	}
-
-	public String getKeyStoreLocation() {
-		return keyStoreLocation;
-	}
-
-	public void setKeyStoreLocation(String keyStoreLocation) {
-		this.keyStoreLocation = keyStoreLocation;
-	}
-
 	public String getPsk() {
 		return psk;
 	}
@@ -177,6 +124,14 @@ public class ResourceServerConfiguration {
 
 	public void setPublicKeyStorage(ArrayList<PublicKey> publicKeyStorage) {
 		this.publicKeyStorage = publicKeyStorage;
+	}
+
+	public EllipticCurveJsonWebKey getRpk() {
+		return rpk;
+	}
+
+	public void setRpk(EllipticCurveJsonWebKey rpk) {
+		this.rpk = rpk;
 	}
 
 }
