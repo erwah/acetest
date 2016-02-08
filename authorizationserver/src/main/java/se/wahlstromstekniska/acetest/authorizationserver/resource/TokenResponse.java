@@ -37,7 +37,12 @@ public class TokenResponse {
 			setTokenType(obj.getString("token_type"));
 			setCsp(obj.getString("csp"));
 			if(obj.has("key")) {
-				setKey(obj.getJSONObject("key").toString());
+				// TODO: figure out what it should be called if it's an encrypted string
+				try {
+					setKey(obj.getJSONObject("key").toString());
+				} catch(Exception e1) {
+					setKey(obj.getString("key"));
+				}
 			}
 			if(obj.has("psk_identity")) {
 				setPskIdentity(obj.getString("psk_identity"));

@@ -15,25 +15,21 @@ import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
-import org.jose4j.jwk.OctetSequenceJsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.keys.EllipticCurves;
 import org.jose4j.lang.JoseException;
 
 import se.wahlstromstekniska.acetest.authorizationserver.Constants;
 import se.wahlstromstekniska.acetest.authorizationserver.DTLSUtils;
-import se.wahlstromstekniska.acetest.authorizationserver.ServerConfiguration;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenResponse;
-import se.wahlstromstekniska.acetest.resourceserver.ResourceServerConfiguration;
 import se.wahlstromstekniska.acetest.resourceserver.TemperatureResponse;
 
 
 public class ClientRPK {
 
-	private static ServerConfiguration asConfig = ServerConfiguration.getInstance();
-	private static ResourceServerConfiguration rsConfig = ResourceServerConfiguration.getInstance();
+	private static ClientConfiguration config = ClientConfiguration.getInstance();
 	
 	final static Logger logger = Logger.getLogger(ClientRPK.class);
 
@@ -74,7 +70,7 @@ public class ClientRPK {
 		Response response;
 		try {
 			// send token request to AS and include the public key
-			response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+asConfig.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, asConfig.getPskIdentity(), asConfig.getPskKey().getBytes());
+			response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getAsCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getAsPskIdentity(), config.getAsPskKey().getBytes());
 			TokenResponse tokenResponse = new TokenResponse(response.getPayload(), response.getOptions().getContentFormat());
 			String accessToken = tokenResponse.getAccessToken();
 			EllipticCurveJsonWebKey rpk = tokenResponse.getRpk();
@@ -101,7 +97,7 @@ public class ClientRPK {
 
 				// send key to resource servers authz-info resource over unencrypted DTLS
 				Request authzInfoRequest = Request.newPost();
-				authzInfoRequest.setURI("coap://localhost:"+rsConfig.getCoapPort()+"/"+Constants.AUTHZ_INFO_RESOURCE);
+				authzInfoRequest.setURI("coap://localhost:"+config.getRsCoapPort()+"/"+Constants.AUTHZ_INFO_RESOURCE);
 				authzInfoRequest.getOptions().setContentFormat(Constants.MediaTypeRegistry_APPLICATION_JWT);
 				authzInfoRequest.setPayload(accessToken.getBytes());
 				Response authzInfoResponse = authzInfoRequest.send().waitForResponse();
@@ -111,7 +107,7 @@ public class ClientRPK {
 
 				if(authzInfoResponse.getCode() == ResponseCode.CREATED) {
 					// get the temperature
-					response = DTLSUtils.dtlsRPKRequest("coaps://localhost:"+rsConfig.getCoapsPort()+"/temperature", "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, popKey, trustedPublicKeys);
+					response = DTLSUtils.dtlsRPKRequest("coaps://localhost:"+config.getRsCoapsPort()+"/temperature", "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, popKey, trustedPublicKeys);
 					TemperatureResponse temperatureResponse = new TemperatureResponse(response.getPayload(), response.getOptions().getContentFormat());
 					logger.info("Temp: " + temperatureResponse);
 				}

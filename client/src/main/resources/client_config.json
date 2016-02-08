@@ -1,0 +1,11 @@
+{
+	"client" : {
+		"asCoapPort": 5683,
+		"asCoapsPort" : 5684,
+		"asPskIdentity" : "lorem",
+		"asPskKey" : "ipsum",
+		"rsCoapPort": 6683,
+		"rsCoapsPort" : 6684,
+		"encryptionKey" : {"kty":"EC","kid":"8vrbt0mlhluirpjj2h5mjg4u4r","x":"HhcGZh3i6HrcE1r8ANQcO4ZxtHlvDyvRcL0bdT_31sE","y":"jd5-IH8W1nGX4k350WsSyn0bvvcAEDP3bvNYCRr8Rz8","crv":"P-256","d":"mPcfOBFhHJwINlZ1S7IPVqtMVBF5EMfZFqgbDlg1aA8"}
+	}
+}

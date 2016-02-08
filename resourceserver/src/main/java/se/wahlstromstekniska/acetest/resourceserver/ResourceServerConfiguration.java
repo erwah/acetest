@@ -37,6 +37,7 @@ public class ResourceServerConfiguration {
 
 	private EllipticCurveJsonWebKey rpk = null;
 
+	private EllipticCurveJsonWebKey asSignKey = null;
 	
 	protected ResourceServerConfiguration() {
 
@@ -56,9 +57,12 @@ public class ResourceServerConfiguration {
 	    	String key = getProperties().getJSONObject("server").getJSONObject("rpk").toString();
     		setRpk((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 
+	    	String signKey = getProperties().getJSONObject("server").getJSONObject("asSignKey").toString();
+    		setAsSignKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(signKey.toString()));
     		
 		} catch (Exception e) {
 			logger.fatal("Failed to parse configuration file: " + configFilePath);
+			logger.fatal(e);
 			System.exit(0);
 		}
  
@@ -132,6 +136,14 @@ public class ResourceServerConfiguration {
 
 	public void setRpk(EllipticCurveJsonWebKey rpk) {
 		this.rpk = rpk;
+	}
+
+	public EllipticCurveJsonWebKey getAsSignKey() {
+		return asSignKey;
+	}
+
+	public void setAsSignKey(EllipticCurveJsonWebKey asSignKey) {
+		this.asSignKey = asSignKey;
 	}
 
 }

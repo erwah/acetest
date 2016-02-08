@@ -29,7 +29,7 @@ public class ClientAuthentication {
 		else {
 			boolean ok = false;
 			
-			ClientCredentials client = config.getClient(clientId);
+			Client client = config.getClient(clientId);
 			if(client != null) {
 				if(client.getClient_id().equals(clientId) && client.getClient_secret().equals(clientSecret)) {
 					logger.debug("Client '" + clientId + "' authenticated successfully.");

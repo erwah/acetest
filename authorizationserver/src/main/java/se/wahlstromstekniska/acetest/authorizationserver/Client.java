@@ -1,14 +1,18 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
-public class ClientCredentials {
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
+
+public class Client {
 
 	private String client_id = "";
 	private String client_secret = "";
+	private EllipticCurveJsonWebKey jwk = null;
 	
-	public ClientCredentials(String client_id, String client_secret) {
+	public Client(String client_id, String client_secret, EllipticCurveJsonWebKey jwk) {
 		super();
 		this.client_id = client_id;
 		this.client_secret = client_secret;
+		this.jwk = jwk;
 	}
 	
 	public String getClient_id() {
@@ -27,6 +31,14 @@ public class ClientCredentials {
 	@Override
 	public String toString() {
 		return "ClientCredentials [client_id=" + client_id + ", client_secret=xxxx]";
+	}
+
+	public EllipticCurveJsonWebKey getJwk() {
+		return jwk;
+	}
+
+	public void setJwk(EllipticCurveJsonWebKey jwk) {
+		this.jwk = jwk;
 	}
 	
 }

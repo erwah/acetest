@@ -3,11 +3,13 @@ package se.wahlstromstekniska.acetest.resourceserver;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.OctetSequenceJsonWebKey;
@@ -28,8 +30,7 @@ import se.wahlstromstekniska.acetest.authorizationserver.resource.Exchange;
 public class AuthzInfoResource extends CoapResource {
     
 	final static Logger logger = Logger.getLogger(AuthzInfoResource.class);
-	private static ServerConfiguration asConfig = ServerConfiguration.getInstance();
-	private static ResourceServerConfiguration rsConfig = ResourceServerConfiguration.getInstance();
+	private static ResourceServerConfiguration config = ResourceServerConfiguration.getInstance();
 	
     public AuthzInfoResource() {
         super("authz-info");
@@ -53,19 +54,35 @@ public class AuthzInfoResource extends CoapResource {
         	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
     		        .setAllowedClockSkewInSeconds(30)
     		        .setExpectedAudience("tempSensorInLivingRoom")
-    		        .setVerificationKey(asConfig.getSignAndEncryptKey().getPublicKey())
+    		        .setVerificationKey(config.getAsSignKey().getPublicKey())
     		        .build();
     	
     		    //  Validate the JWT and process it to the Claims
-    		    JwtClaims jwtClaims;
-					jwtClaims = jwtConsumer.processToClaims(new String(accessToken));
+    		    JwtClaims jwtClaims = jwtConsumer.processToClaims(new String(accessToken));
     		    if(jwtClaims.getAudience().contains("tempSensorInLivingRoom")) {
     		    	
     		    	// jose4j don't read claims with objects in a good way so getting raw json and parsing manually instead
     		    	String rawJson = jwtClaims.getRawJson();
-    		    	JSONObject jsonObject = new JSONObject(rawJson).getJSONObject("cnf").getJSONObject("jwk");
+    		    	
+    		    	String clientsPopKey = "";
+    		    	
+    		    	if(new JSONObject(rawJson).getJSONObject("cnf").has("jwk")) {
+    		    		// it's an unencrypted public key
+    		    		clientsPopKey = new JSONObject(rawJson).getJSONObject("cnf").getJSONObject("jwk").toString();
+    		    	}
+    		    	else {
+    		    		// it's an encrypted symmetric pop key
+    		    		String encryptedPopKey = new JSONObject(rawJson).getJSONObject("cnf").getString("jwe");
 
-    				JsonWebKey jwk = JsonWebKey.Factory.newJwk(jsonObject.toString());
+    		    		JsonWebEncryption jwe = new JsonWebEncryption();
+    					jwe.setKey(config.getRpk().getEcPrivateKey());
+    					jwe.setCompactSerialization(encryptedPopKey);
+
+    					clientsPopKey = jwe.getPayload();
+    		    	}
+ 
+    		    	JsonWebKey jwk = JsonWebKey.Factory.newJwk(clientsPopKey);
+
     				String keyType = jwk.getKeyType();
     				
     				if(keyType.equalsIgnoreCase("oct")) {
@@ -74,7 +91,7 @@ public class AuthzInfoResource extends CoapResource {
         				pskIdentity = (String) jwtClaims.getClaimValue("psk_identity");
 
     	    		    // add psk key/psk identity to key storage
-    	    		    rsConfig.getPskStorage().setKey(pskIdentity, ojwk.getOctetSequence());
+    	    		    config.getPskStorage().setKey(pskIdentity, ojwk.getOctetSequence());
     				}
     				else {
     					PublicKey publicKey = null;
@@ -88,7 +105,7 @@ public class AuthzInfoResource extends CoapResource {
     						publicKey = rsajwk.getPublicKey();
     					}
     					
-    					rsConfig.getPublicKeyStorage().add(publicKey);
+    					config.getPublicKeyStorage().add(publicKey);
     				}
     				
     		    }

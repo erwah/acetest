@@ -11,7 +11,7 @@ import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public AccessToken generateJWT(EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey popKey, String pskIdentity) throws Exception {
+	public AccessToken generateJWT(boolean isSymmetric, EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey popKey, String encryptedSymmetricPopKey, String pskIdentity) throws Exception {
 
 		AccessToken token = new AccessToken();
 		token.setAudience(aud);
@@ -36,7 +36,15 @@ public class JWT {
 	    String claimsJson = claims.toJson();
 
 	    // TODO: this is just a quick fix to handle objects in JwtClaims. Remove scary parsing.
-	    String cnf = "\"cnf\": {\"jwk\":" + popKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
+	    String cnf = "";
+	    
+	    if(isSymmetric) {
+	    	// TODO: is jwe the correct claim name to put it in?
+		    cnf = "\"cnf\": {\"jwe\": \"" + encryptedSymmetricPopKey + "\"}";
+	    }
+	    else {
+		    cnf = "\"cnf\": {\"jwk\":" + popKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + "}";
+	    }
 	    
 	    // remove last } sign
 	    claimsJson = claimsJson.substring(0, claimsJson.length()-1);

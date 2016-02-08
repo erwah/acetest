@@ -1,16 +1,22 @@
 package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
-import java.security.SecureRandom;
 import java.math.BigInteger;
+import java.security.Key;
+import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.jwk.OctJwkGenerator;
+import org.jose4j.keys.AesKey;
+import org.jose4j.lang.ByteUtil;
 
 import se.wahlstromstekniska.acetest.authorizationserver.AccessToken;
 import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
@@ -87,19 +93,24 @@ public class TokenResource extends CoapResource {
 		        					
 		        				// generate a token for the client against the resource.
 	        					logger.debug("Client " + tokenRequest.getClient_id() + " is authorized to get token for the resource server " + rs.getAud());
-		
+
+		        				boolean isSymmetricKey = false;
+
 								try {
 									AccessToken token = null;
-									String serializedJwe = "";
+									String clientsEncryptedKey = "";
+									String rsEncryptedKey = "";
 									String pskIdentity = "";
 									
 									if(rs.getTokenFormat() == ResourceServer.TOKEN_FORMAT_JWT) {
 										// get authorization servers signing key
 				        				JWT jwt = new JWT();
-	
-				        				// get key from client and if none, generate keys on AS and return encrypted keys to client
+				        				
 										JsonWebKey popKey = tokenRequest.getRawKey(); 
+ 
+				        				// get key from client and if none, generate keys on AS and return encrypted keys to client
 										if(popKey == null) {
+											isSymmetricKey = true;
 											popKey = OctJwkGenerator.generateJwk(128);
 											
 											// generate a unique kid for the newly generated key
@@ -110,27 +121,48 @@ public class TokenResource extends CoapResource {
 										else {
 											
 										}
-										
-										// TODO: ENCRYPT THE SYMMETRIC KEY IN BOTH TOKEN AND IN RESPONSE!!!!!!
-										
 										// generate a unique PSK identity that's used by by the client when accessing the resource server
+										// TODO: Replace with KID
 										pskIdentity = new BigInteger(130, random).toString(32);
-										
-										
-										token = jwt.generateJWT(config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, pskIdentity);
-										serializedJwe = popKey.toJson(OutputControlLevel.INCLUDE_SYMMETRIC);
-										
+
+										if(isSymmetricKey) {
+											// encrypt the symmetric pop key two times, first for client and then for the RS
+											JsonWebEncryption clientJWE = new JsonWebEncryption();
+											clientJWE.setPayload(popKey.toJson(OutputControlLevel.INCLUDE_SYMMETRIC));
+											clientJWE.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES); 
+											clientJWE.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256);
+											clientJWE.setKey(config.getClient(tokenRequest.getClient_id()).getJwk().getKey());
+											clientsEncryptedKey = clientJWE.getCompactSerialization();
+											
+											// now encrypt the pop key for the RS
+											JsonWebEncryption rsJWE = new JsonWebEncryption();
+											rsJWE.setPayload(popKey.toJson(OutputControlLevel.INCLUDE_SYMMETRIC));
+											rsJWE.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES);
+											rsJWE.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256);
+											
+											// get the RS public key
+											rsJWE.setKey(rs.getRPK().getKey());
+											rsEncryptedKey = rsJWE.getCompactSerialization();
+											// if it's an symmetric key then it needs to be sent encrypted, otherwise it can be sent using public keys
+											token = jwt.generateJWT(true, config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, rsEncryptedKey, pskIdentity);
+										}
+										else {
+											token = jwt.generateJWT(false, config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, null, null);
+										}
+
 									}
 									else {
 										throw new Exception("CWT not implemented yet.");
 									}
 			        				
 									TokenResponse response = null;
-									if(tokenRequest.getRawKey() != null) {
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, null, rs.getRPK());
+									if(isSymmetricKey) {
+										// using symmetric crypto, PSK identity needs to be sent
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), clientsEncryptedKey, pskIdentity, null);
 									}
 									else {
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), serializedJwe, pskIdentity, null);
+										// using asymmetric keys and the AS public key must be sent to the client for authentication
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, null, rs.getRPK());
 									}
 			        				
 			        				byte[] responsePayload = response.toPayload(contentFormat);

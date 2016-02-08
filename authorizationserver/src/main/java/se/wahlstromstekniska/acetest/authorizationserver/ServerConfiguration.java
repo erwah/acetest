@@ -31,7 +31,7 @@ public class ServerConfiguration {
 	private static JSONObject properties = null;
 	
 	private ArrayList<ResourceServer> resourceServers = new ArrayList<ResourceServer>();
-	private ArrayList<ClientCredentials> clients = new ArrayList<ClientCredentials>();
+	private ArrayList<Client> clients = new ArrayList<Client>();
 	private int coapPort = 5683;
 	private int coapsPort = 5684;
 	
@@ -118,8 +118,11 @@ public class ServerConfiguration {
 	    	    JSONObject item = clientList.getJSONObject(i);
 	    	    String clientID = item.getString("clientId");
 	    	    String clientSecret = item.getString("clientSecret");
+	    	    
+		    	String encryptionKey = item.getJSONObject("encryptionKey").toString();
+		    	EllipticCurveJsonWebKey jwk = (EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(encryptionKey);
 
-	    	    clients.add(new ClientCredentials(clientID, clientSecret));
+	    	    clients.add(new Client(clientID, clientSecret, jwk));
 	    	}
 	    	
 	    	// load port(s) config
@@ -152,13 +155,13 @@ public class ServerConfiguration {
 			try {
 				jwk = generateKey("AS signing key");
 				String keyStr = jwk.toJson(OutputControlLevel.INCLUDE_PRIVATE);
-				logger.info("Example key object to copy into the server.signAndEncryptKey property: " + keyStr);
+				logger.fatal("Example key object to copy into the server.signAndEncryptKey property: " + keyStr);
 			} catch (JoseException e1) {
 				logger.error(e1);
 			}
 			
-			logger.info("Shutting down server. Make sure to add a sign and encryption key to the config.json file.");
-
+			logger.fatal("Shutting down server. Make sure to add a sign and encryption key to the config.json file.");
+			logger.fatal(e);
 			System.exit(0);
 		}
  
@@ -198,10 +201,10 @@ public class ServerConfiguration {
 		return jwk;
 	}
 	
-	public ClientCredentials getClient(String clientId) {
-		ClientCredentials found = null;
+	public Client getClient(String clientId) {
+		Client found = null;
 		
-		for (ClientCredentials client : clients) {
+		for (Client client : clients) {
 			if(client.getClient_id().equals(clientId)) {
 				found = client;
 			}
