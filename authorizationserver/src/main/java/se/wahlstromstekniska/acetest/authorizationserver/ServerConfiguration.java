@@ -35,12 +35,6 @@ public class ServerConfiguration {
 	private int coapPort = 5683;
 	private int coapsPort = 5684;
 	
-	private String trustStorePassword = null;
-	private String trustStoreLocation = null;
-
-	private String keyStorePassword = null;
-	private String keyStoreLocation = null;
-
 	private String pskIdentity = null;
 	private String pskKey = null;
 		
@@ -129,16 +123,6 @@ public class ServerConfiguration {
 	    	logger.debug("Loading ports resource servers.");
 	    	setCoapPort(getProperties().getJSONObject("server").getInt("coapPort"));
 	    	setCoapsPort(getProperties().getJSONObject("server").getInt("coapsPort"));
-
-	    	// load trust store
-	    	logger.debug("Loading trust store information.");
-	    	setTrustStoreLocation(getProperties().getJSONObject("server").getString("trustStoreLocation"));
-	    	setTrustStorePassword(getProperties().getJSONObject("server").getString("trustStorePassword"));
-
-	    	// load key store
-	    	logger.debug("Loading key store information.");
-	    	setKeyStoreLocation(getProperties().getJSONObject("server").getString("keyStoreLocation"));
-	    	setKeyStorePassword(getProperties().getJSONObject("server").getString("keyStorePassword"));
 
 	    	// load psk identity used to connect to AS securely from the client
 	    	logger.debug("Loading PSK.");
@@ -234,38 +218,6 @@ public class ServerConfiguration {
 
 	public void setCoapsPort(int coapsPort) {
 		this.coapsPort = coapsPort;
-	}
-
-	public String getTrustStorePassword() {
-		return trustStorePassword;
-	}
-
-	public void setTrustStorePassword(String trustStorePassword) {
-		this.trustStorePassword = trustStorePassword;
-	}
-
-	public String getTrustStoreLocation() {
-		return trustStoreLocation;
-	}
-
-	public void setTrustStoreLocation(String trustStoreLocation) {
-		this.trustStoreLocation = trustStoreLocation;
-	}
-
-	public String getKeyStorePassword() {
-		return keyStorePassword;
-	}
-
-	public void setKeyStorePassword(String keyStorePassword) {
-		this.keyStorePassword = keyStorePassword;
-	}
-
-	public String getKeyStoreLocation() {
-		return keyStoreLocation;
-	}
-
-	public void setKeyStoreLocation(String keyStoreLocation) {
-		this.keyStoreLocation = keyStoreLocation;
 	}
 
 	public String getPskIdentity() {

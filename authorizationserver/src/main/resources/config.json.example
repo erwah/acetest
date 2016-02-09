@@ -2,10 +2,6 @@
 	"server" : {
 		"coapPort": 5683,
 		"coapsPort" : 5684,
-		"trustStoreLocation" : "../certs/trustStore.jks",
-		"trustStorePassword" : "XXX",
-		"keyStoreLocation" : "../certs/keyStore.jks",
-		"keyStorePassword" : "XXX",
 		"pskIdentity" : "XXX",
 		"pskKey" : "XXX",
 		"signAndEncryptKey" : null
