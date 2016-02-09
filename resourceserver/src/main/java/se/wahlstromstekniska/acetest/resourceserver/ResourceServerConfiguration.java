@@ -27,8 +27,10 @@ public class ResourceServerConfiguration {
 		
 	private static JSONObject properties = null;
 	
-	private String configFilePath = "/resource_server_config.json";
-	
+	private String configFilePath = "/resourceserver.json";
+
+	private String aud;
+
 	// TODO: Handle life cycle management of keys, add tokens right next to the public keys
 	private InMemoryPskStore pskStorage = new InMemoryPskStore();
 
@@ -51,18 +53,21 @@ public class ResourceServerConfiguration {
 			
 	    	// load port(s) config
 	    	logger.debug("Loading ports resource servers.");
-	    	setCoapPort(getProperties().getJSONObject("server").getInt("coapPort"));
-	    	setCoapsPort(getProperties().getJSONObject("server").getInt("coapsPort"));
+	    	setCoapPort(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getInt("coapPort"));
+	    	setCoapsPort(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getInt("coapsPort"));
 
-	    	String key = getProperties().getJSONObject("server").getJSONObject("rpk").toString();
+	    	setAud(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getString("aud"));
+
+	    	String key = getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getJSONObject("rpk").toString();
     		setRpk((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 
-	    	String signKey = getProperties().getJSONObject("server").getJSONObject("asSignKey").toString();
+	    	String signKey = getProperties().getJSONObject("resourceserverconfig").getJSONObject("authorizationserver").getJSONObject("asSignKey").toString();
     		setAsSignKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(signKey.toString()));
     		
 		} catch (Exception e) {
 			logger.fatal("Failed to parse configuration file: " + configFilePath);
 			logger.fatal(e);
+			logger.fatal("Run the system setup project. It will automatically create a dummy configuraton to get you started.");
 			System.exit(0);
 		}
  
@@ -144,6 +149,14 @@ public class ResourceServerConfiguration {
 
 	public void setAsSignKey(EllipticCurveJsonWebKey asSignKey) {
 		this.asSignKey = asSignKey;
+	}
+
+	public String getAud() {
+		return aud;
+	}
+
+	public void setAud(String aud) {
+		this.aud = aud;
 	}
 
 }

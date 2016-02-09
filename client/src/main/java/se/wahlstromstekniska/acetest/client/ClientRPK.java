@@ -60,10 +60,10 @@ public class ClientRPK {
 
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getRsAud());
+		req.setClientID(config.getClientId());
+		req.setClientSecret(config.getClientSecret());
+		req.setScopes(config.getRsScopes());
 		// add key to the request so that public part can be sent to AS
 		req.setKey(popKey);
 		

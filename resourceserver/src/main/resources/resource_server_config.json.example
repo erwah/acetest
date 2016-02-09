@@ -1,8 +1,0 @@
-{
-	"server" : {
-		"coapPort": 6683,
-		"coapsPort" : 6684,
-		"asSignKey" : {"kty":"EC"...
-		"rpk" : {"kty":"EC"....
-	}
-}

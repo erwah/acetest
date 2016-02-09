@@ -38,10 +38,10 @@ public class ClientPSK {
 	private static void symmetricClient() {
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getRsAud());
+		req.setClientID(config.getClientId());
+		req.setClientSecret(config.getClientSecret());
+		req.setScopes(config.getRsScopes());
 
 		Response response;
 		try {

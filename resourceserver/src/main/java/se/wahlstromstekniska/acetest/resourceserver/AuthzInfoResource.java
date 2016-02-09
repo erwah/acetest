@@ -53,13 +53,13 @@ public class AuthzInfoResource extends CoapResource {
     				
         	    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
     		        .setAllowedClockSkewInSeconds(30)
-    		        .setExpectedAudience("tempSensorInLivingRoom")
+    		        .setExpectedAudience(config.getAud())
     		        .setVerificationKey(config.getAsSignKey().getPublicKey())
     		        .build();
     	
     		    //  Validate the JWT and process it to the Claims
     		    JwtClaims jwtClaims = jwtConsumer.processToClaims(new String(accessToken));
-    		    if(jwtClaims.getAudience().contains("tempSensorInLivingRoom")) {
+    		    if(jwtClaims.getAudience().contains(config.getAud())) {
     		    	
     		    	// jose4j don't read claims with objects in a good way so getting raw json and parsing manually instead
     		    	String rawJson = jwtClaims.getRawJson();

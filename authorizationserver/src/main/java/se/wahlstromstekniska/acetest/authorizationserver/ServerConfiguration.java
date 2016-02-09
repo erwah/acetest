@@ -40,7 +40,7 @@ public class ServerConfiguration {
 		
 	private EllipticCurveJsonWebKey signAndEncryptKey = null;
 	
-	private String configFilePath = "/config.json";
+	private String configFilePath = "/authorizationserver.json";
 	
 	protected ServerConfiguration() {
 
@@ -55,7 +55,7 @@ public class ServerConfiguration {
 			// load resource servers
 			logger.debug("Loading configured resource servers.");
 
-	    	JSONArray rsList = getProperties().getJSONArray("resourceservers");
+	    	JSONArray rsList = getProperties().getJSONObject("authorizationserverconfig").getJSONArray("resourceservers");
 	    	for (int i=0; i<rsList.length(); i++) {
 	    	    JSONObject item = rsList.getJSONObject(i);
 
@@ -107,7 +107,7 @@ public class ServerConfiguration {
 	    	// load clients
 	    	logger.debug("Loading configured clients.");
 	        
-	    	JSONArray clientList = getProperties().getJSONArray("clients");
+	    	JSONArray clientList = getProperties().getJSONObject("authorizationserverconfig").getJSONArray("clients");
 	    	for (int i=0; i<clientList.length(); i++) {
 	    	    JSONObject item = clientList.getJSONObject(i);
 	    	    String clientID = item.getString("clientId");
@@ -121,31 +121,22 @@ public class ServerConfiguration {
 	    	
 	    	// load port(s) config
 	    	logger.debug("Loading ports resource servers.");
-	    	setCoapPort(getProperties().getJSONObject("server").getInt("coapPort"));
-	    	setCoapsPort(getProperties().getJSONObject("server").getInt("coapsPort"));
+	    	setCoapPort(getProperties().getJSONObject("authorizationserverconfig").getJSONObject("authorizationserver").getInt("coapPort"));
+	    	setCoapsPort(getProperties().getJSONObject("authorizationserverconfig").getJSONObject("authorizationserver").getInt("coapsPort"));
 
 	    	// load psk identity used to connect to AS securely from the client
 	    	logger.debug("Loading PSK.");
-	    	setPskKey(getProperties().getJSONObject("server").getString("pskKey"));
-	    	setPskIdentity(getProperties().getJSONObject("server").getString("pskIdentity"));
+	    	setPskKey(getProperties().getJSONObject("authorizationserverconfig").getJSONObject("authorizationserver").getString("pskKey"));
+	    	setPskIdentity(getProperties().getJSONObject("authorizationserverconfig").getJSONObject("authorizationserver").getString("pskIdentity"));
 
 	    	// load sign and encryption key
 	    	logger.debug("Loading sign and encryption key.");
-	    	String key = getProperties().getJSONObject("server").getJSONObject("signAndEncryptKey").toString();
+	    	String key = getProperties().getJSONObject("authorizationserverconfig").getJSONObject("authorizationserver").getJSONObject("signAndEncryptKey").toString();
     		setSignAndEncryptKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 		} catch (Exception e) {
 			logger.fatal("Failed to parse configuration file: " + configFilePath);
-			EllipticCurveJsonWebKey jwk;
-			try {
-				jwk = generateKey("AS signing key");
-				String keyStr = jwk.toJson(OutputControlLevel.INCLUDE_PRIVATE);
-				logger.fatal("Example key object to copy into the server.signAndEncryptKey property: " + keyStr);
-			} catch (JoseException e1) {
-				logger.error(e1);
-			}
-			
-			logger.fatal("Shutting down server. Make sure to add a sign and encryption key to the config.json file.");
 			logger.fatal(e);
+			logger.fatal("Run the system setup project. It will automatically create a dummy configuraton to get you started.");
 			System.exit(0);
 		}
  

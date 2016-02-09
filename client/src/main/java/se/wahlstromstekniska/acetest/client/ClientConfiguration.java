@@ -16,7 +16,10 @@ public class ClientConfiguration {
 	final static Logger logger = Logger.getLogger(ClientConfiguration.class);
 
 	private static ClientConfiguration instance = null;
-	
+
+	private String clientId;
+	private String clientSecret;
+
 	private int asCoapPort;
 	private int asCoapsPort;
 	private int rsCoapPort;
@@ -24,12 +27,15 @@ public class ClientConfiguration {
 	
 	private String asPskIdentity;
 	private String asPskKey;
-	
+
+	private String rsAud;
+	private String rsScopes;
+
 	private EllipticCurveJsonWebKey encryptionKey = null;
 	
 	private static JSONObject properties = null;
 	
-	private String configFilePath = "/client_config.json";
+	private String configFilePath = "/client.json";
 	
 	
 	protected ClientConfiguration() {
@@ -44,24 +50,32 @@ public class ClientConfiguration {
 			
 	    	// load port(s) config
 	    	logger.debug("Loading ports for resource servers.");
-	    	setRsCoapPort(getProperties().getJSONObject("client").getInt("rsCoapPort"));
-	    	setRsCoapsPort(getProperties().getJSONObject("client").getInt("rsCoapsPort"));
+	    	setRsCoapPort(getProperties().getJSONObject("clientconfig").getJSONObject("resourceserver").getInt("coapPort"));
+	    	setRsCoapsPort(getProperties().getJSONObject("clientconfig").getJSONObject("resourceserver").getInt("coapsPort"));
 
-	    	logger.debug("Loading ports for resource servers.");
-	    	setAsCoapPort(getProperties().getJSONObject("client").getInt("asCoapPort"));
-	    	setAsCoapsPort(getProperties().getJSONObject("client").getInt("asCoapsPort"));
+	    	// load resource servers aud
+	    	setRsAud(getProperties().getJSONObject("clientconfig").getJSONObject("resourceserver").getString("aud"));
+	    	setRsScopes(getProperties().getJSONObject("clientconfig").getJSONObject("resourceserver").getString("scopes"));
+
+	    	logger.debug("Loading ports for authorization server.");
+	    	setAsCoapPort(getProperties().getJSONObject("clientconfig").getJSONObject("authorizationserver").getInt("coapPort"));
+	    	setAsCoapsPort(getProperties().getJSONObject("clientconfig").getJSONObject("authorizationserver").getInt("coapsPort"));
 	    	
 	    	// load psk identity used to connect to AS securely from the client
 	    	logger.debug("Loading PSK.");
-	    	setAsPskIdentity(getProperties().getJSONObject("client").getString("asPskIdentity"));
-	    	setAsPskKey(getProperties().getJSONObject("client").getString("asPskKey"));
+	    	setAsPskIdentity(getProperties().getJSONObject("clientconfig").getJSONObject("authorizationserver").getString("pskIdentity"));
+	    	setAsPskKey(getProperties().getJSONObject("clientconfig").getJSONObject("authorizationserver").getString("pskKey"));
 
-	    	String key = getProperties().getJSONObject("client").getJSONObject("encryptionKey").toString();
+	    	String key = getProperties().getJSONObject("clientconfig").getJSONObject("client").getJSONObject("encryptionKey").toString();
 	    	setEncryptionKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
-    		
+
+	    	setClientId(getProperties().getJSONObject("clientconfig").getJSONObject("client").getString("client_id"));
+	    	setClientSecret(getProperties().getJSONObject("clientconfig").getJSONObject("client").getString("client_secret"));
+
 		} catch (Exception e) {
 			logger.fatal("Failed to parse configuration file: " + configFilePath);
 			logger.fatal(e);
+			logger.fatal("Run the system setup project. It will automatically create a dummy configuraton to get you started.");
 			System.exit(0);
 		}
  
@@ -143,6 +157,38 @@ public class ClientConfiguration {
 
 	public void setAsPskKey(String asPskKey) {
 		this.asPskKey = asPskKey;
+	}
+
+	public String getRsAud() {
+		return rsAud;
+	}
+
+	public void setRsAud(String rsAud) {
+		this.rsAud = rsAud;
+	}
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	public String getClientSecret() {
+		return clientSecret;
+	}
+
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
+	public String getRsScopes() {
+		return rsScopes;
+	}
+
+	public void setRsScopes(String rsScopes) {
+		this.rsScopes = rsScopes;
 	}
 
 }

@@ -1,8 +1,0 @@
-{
-	"server" : {
-		"coapPort": 6683,
-		"coapsPort" : 6684,
-		"asSignKey" : {"kty":"EC","kid":"AS signing key","x":"EyC8G4X_0lTVjXt5FKW4AgdnShQ-jZsOfWsnDVgeFq4","y":"f3yUt48KPU8VO114f8PhI2o_wgU7Hsf2cl01wCcFlr4", "crv":"P-256"},
-		"rpk" : {"kty":"EC","kid":"8vrbt0mlhluirpjj2h5mjg4u4r","x":"HhcGZh3i6HrcE1r8ANQcO4ZxtHlvDyvRcL0bdT_31sE","y":"jd5-IH8W1nGX4k350WsSyn0bvvcAEDP3bvNYCRr8Rz8","crv":"P-256","d":"mPcfOBFhHJwINlZ1S7IPVqtMVBF5EMfZFqgbDlg1aA8"}
-	}
-}
