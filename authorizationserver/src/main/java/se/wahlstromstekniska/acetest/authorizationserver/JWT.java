@@ -38,6 +38,7 @@ public class JWT {
 	    // TODO: this is just a quick fix to handle objects in JwtClaims. Remove scary parsing.
 	    String cnf = "";
 	    
+	    // TODO: Verify against spec. It talks about cnf.ck instead.
 	    if(isSymmetric) {
 	    	// TODO: is jwe the correct claim name to put it in?
 		    cnf = "\"cnf\": {\"jwe\": \"" + encryptedSymmetricPopKey + "\"}";

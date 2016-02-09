@@ -66,6 +66,7 @@ public class AuthzInfoResource extends CoapResource {
     		    	
     		    	String clientsPopKey = "";
     		    	
+    		    	// TODO: Verify against spec.
     		    	if(new JSONObject(rawJson).getJSONObject("cnf").has("jwk")) {
     		    		// it's an unencrypted public key
     		    		clientsPopKey = new JSONObject(rawJson).getJSONObject("cnf").getJSONObject("jwk").toString();
