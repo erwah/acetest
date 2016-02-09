@@ -25,6 +25,11 @@ public class TemperatureResource extends CoapResource {
 
     @Override
     public void handlePOST(CoapExchange exchange) {
+
+    	// read request to get a log
+    	int contentFormat = exchange.getRequestOptions().getContentFormat();
+    	Exchange.getPayload(exchange, contentFormat);
+    	
     	TemperatureResponse response = new TemperatureResponse(randomInRange(16.5, 24.5));
     	
 		Exchange.respond(exchange, ResponseCode.CONTENT, response.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);

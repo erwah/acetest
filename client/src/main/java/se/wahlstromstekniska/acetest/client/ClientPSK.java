@@ -70,11 +70,6 @@ public class ClientPSK {
 				ojwk = new OctetSequenceJsonWebKey(jwk.getKey());
 			}
 			
-			logger.info(accessToken);
-			logger.info(response);
-			logger.info(jwk.toJson(OutputControlLevel.INCLUDE_PRIVATE));
-			logger.info("Time elapsed (ms): " + response.getRTT());
-
 			// send key to resource servers authz-info resource
 			Request authzInfoRequest = Request.newPost();
 			authzInfoRequest.setURI("coap://localhost:"+config.getRsCoapPort()+"/"+Constants.AUTHZ_INFO_RESOURCE);
@@ -82,12 +77,9 @@ public class ClientPSK {
 			authzInfoRequest.setPayload(accessToken.getBytes());
 			Response authzInfoResponse = authzInfoRequest.send().waitForResponse();
 			
-			logger.info("code: " + authzInfoResponse.getCode());
-			logger.info("payload: " + authzInfoResponse.getPayloadString());
-
 			if(authzInfoResponse.getCode() == ResponseCode.CREATED) {
 				// get the temperature
-				response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getRsCoapsPort()+"/temperature", "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, pskIdentity, ojwk.getOctetSequence());
+				response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getRsCoapsPort()+"/temperature", "POST", "".getBytes(), MediaTypeRegistry.APPLICATION_JSON, pskIdentity, ojwk.getOctetSequence());
 				TemperatureResponse temperatureResponse = new TemperatureResponse(response.getPayload(), response.getOptions().getContentFormat());
 				logger.info("Temp: " + temperatureResponse);
 			}

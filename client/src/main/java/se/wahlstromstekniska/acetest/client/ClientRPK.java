@@ -54,10 +54,6 @@ public class ClientRPK {
 	    String kid = new BigInteger(130, random).toString(32);
 		popKey.setKeyId(kid);
 		
-		logger.info(popKey.toJson(OutputControlLevel.INCLUDE_PRIVATE));
-		logger.info(popKey.toJson(OutputControlLevel.PUBLIC_ONLY));
-
-
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
 		req.setAud(config.getRsAud());
@@ -92,9 +88,6 @@ public class ClientRPK {
 				ArrayList<PublicKey> trustedPublicKeys = new ArrayList<PublicKey>();
 				trustedPublicKeys.add(publicKey);
 				
-				logger.info(accessToken);
-				logger.info("Time elapsed (ms): " + response.getRTT());
-
 				// send key to resource servers authz-info resource over unencrypted DTLS
 				Request authzInfoRequest = Request.newPost();
 				authzInfoRequest.setURI("coap://localhost:"+config.getRsCoapPort()+"/"+Constants.AUTHZ_INFO_RESOURCE);
@@ -102,12 +95,9 @@ public class ClientRPK {
 				authzInfoRequest.setPayload(accessToken.getBytes());
 				Response authzInfoResponse = authzInfoRequest.send().waitForResponse();
 				
-				logger.info("code: " + authzInfoResponse.getCode());
-				logger.info("payload: " + authzInfoResponse.getPayloadString());
-
 				if(authzInfoResponse.getCode() == ResponseCode.CREATED) {
 					// get the temperature
-					response = DTLSUtils.dtlsRPKRequest("coaps://localhost:"+config.getRsCoapsPort()+"/temperature", "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, popKey, trustedPublicKeys);
+					response = DTLSUtils.dtlsRPKRequest("coaps://localhost:"+config.getRsCoapsPort()+"/temperature", "POST", "".getBytes(), MediaTypeRegistry.APPLICATION_JSON, popKey, trustedPublicKeys);
 					TemperatureResponse temperatureResponse = new TemperatureResponse(response.getPayload(), response.getOptions().getContentFormat());
 					logger.info("Temp: " + temperatureResponse);
 				}

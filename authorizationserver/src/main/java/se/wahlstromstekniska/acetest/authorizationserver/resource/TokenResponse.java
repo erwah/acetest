@@ -92,7 +92,8 @@ public class TokenResponse {
 
 			json += "\n}";
 			
-			return json.getBytes();
+			JSONObject o = new JSONObject(json);
+			return o.toString(4).getBytes();
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
 			return "not implemented yet".getBytes();

@@ -184,7 +184,8 @@ public class TokenRequest {
 				     + "  \"scopes\" : \"" + scopes + "\""
 				   	 + "}";
 
-			return json.getBytes();
+			JSONObject o = new JSONObject(json);
+			return o.toString(4).getBytes();
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
 			return "not implemented".getBytes();
