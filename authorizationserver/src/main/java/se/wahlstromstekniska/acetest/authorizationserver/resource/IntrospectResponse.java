@@ -39,8 +39,12 @@ public class IntrospectResponse {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
 			setActive(obj.getBoolean("active"));
-			setAud(obj.getString("aud"));
-			setCnf(obj.getJSONObject("cnf").toString());
+			if(obj.has("aud")) {
+				setAud(obj.getString("aud"));
+			}
+			if(obj.has("cnf")) {
+				setCnf(obj.getJSONObject("cnf").toString());
+			}
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
 			throw new Exception("Not implemented yet");
