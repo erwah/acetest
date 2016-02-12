@@ -1,4 +1,4 @@
-# acetest
+# Authorization for constrained IoT devices
 A proof of concept of authorization based on OAuth2 for Constrained IoT devices defined in https://datatracker.ietf.org/doc/draft-ietf-ace-oauth-authz/
 
 Do NOT use in production.
