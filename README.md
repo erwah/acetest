@@ -17,9 +17,9 @@ Support the following resources:
 - /token 
 - /introspection
 
-Run CoAPAuthorizationServer for a non-protected CoAP server.
-
-Run CoAPSAuthorizationServer for a DTLS PSK protected CoSPS server.
+Startup:
+- Run CoAPAuthorizationServer for a non-protected CoAP server.
+- Run CoAPSAuthorizationServer for a DTLS PSK protected CoSPS server.
 
 ## Resource Server
 
@@ -29,6 +29,7 @@ Support the following resources:
 - /authz-info
 - /temperature
 
+Startup:
 - Run ResourceServerPSK to deliver a temperature reading to an authorized client using DTLS PSK, uses local verification of the access token.
 - Run ResourceServerRPK to deliver a temperature reading to an authorized client using DTLS RPK, uses the /introspection resource to validate access token.
 
@@ -36,6 +37,7 @@ Support the following resources:
 
 Authenticates against Authorization Server using DTLS PSK. Gets an proof of possession access token. Calls an /authz-info resource on the Resoruce Server then makes an DTLS protected call against the /temperature endpoint.
 
+Startup:
 - Run ClientPSK to prove possesion of an, by AS generated, symmetric key against the RS using DTLS PSK.
 - Run ClientRPK to prove possesion of an, by the client generated, assymetric key against the RS using DTLS RPK.
 
