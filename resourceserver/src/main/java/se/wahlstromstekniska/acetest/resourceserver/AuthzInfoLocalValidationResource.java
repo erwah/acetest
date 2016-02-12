@@ -25,12 +25,12 @@ import se.wahlstromstekniska.acetest.authorizationserver.Constants;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.Exchange;
 
 
-public class AuthzInfoResource extends CoapResource {
+public class AuthzInfoLocalValidationResource extends CoapResource {
     
-	final static Logger logger = Logger.getLogger(AuthzInfoResource.class);
+	final static Logger logger = Logger.getLogger(AuthzInfoLocalValidationResource.class);
 	private static ResourceServerConfiguration config = ResourceServerConfiguration.getInstance();
 	
-    public AuthzInfoResource() {
+    public AuthzInfoLocalValidationResource() {
         super("authz-info");
 
         getAttributes().setTitle("Authoriation info resource for CoAP");
@@ -44,8 +44,6 @@ public class AuthzInfoResource extends CoapResource {
     	int contentFormat = exchange.getRequestOptions().getContentFormat();
     	byte[] accessToken = Exchange.getPayload(exchange, contentFormat);
     	
-    	String pskIdentity = null;
-    	
     	if(contentFormat == Constants.MediaTypeRegistry_APPLICATION_JWT) {
     		try {
     				
@@ -58,6 +56,8 @@ public class AuthzInfoResource extends CoapResource {
     		    //  Validate the JWT and process it to the Claims
     		    JwtClaims jwtClaims = jwtConsumer.processToClaims(new String(accessToken));
     		    if(jwtClaims.getAudience().contains(config.getAud())) {
+    		    	
+    		    	// TODO: check scopes
     		    	
     		    	// jose4j don't read claims with objects in a good way so getting raw json and parsing manually instead
     		    	String rawJson = jwtClaims.getRawJson();
@@ -87,10 +87,10 @@ public class AuthzInfoResource extends CoapResource {
     				if(keyType.equalsIgnoreCase("oct")) {
     					// this is a symmetric key, either use it as a PSK or with object security
     					OctetSequenceJsonWebKey ojwk = new OctetSequenceJsonWebKey(jwk.getKey());
-        				pskIdentity = (String) jwtClaims.getClaimValue("psk_identity");
 
-    	    		    // add psk key/psk identity to key storage
-    	    		    config.getPskStorage().setKey(pskIdentity, ojwk.getOctetSequence());
+    					// add PSK key and identity to key storage. Use KID as PSK identity according to spec.
+    					// TODO: look for duplicates
+    	    		    config.getPskStorage().setKey(jwk.getKeyId(), ojwk.getOctetSequence());
     				}
     				else {
     					PublicKey publicKey = null;
@@ -103,7 +103,9 @@ public class AuthzInfoResource extends CoapResource {
     						RsaJsonWebKey rsajwk = new RsaJsonWebKey((RSAPublicKey) jwk.getKey());
     						publicKey = rsajwk.getPublicKey();
     					}
-    					
+
+    					// made changes to scandium to support a list of public keys. Next release of scandium will include the fix.
+    					// TODO: look for duplicates
     					config.getPublicKeyStorage().add(publicKey);
     				}
     				

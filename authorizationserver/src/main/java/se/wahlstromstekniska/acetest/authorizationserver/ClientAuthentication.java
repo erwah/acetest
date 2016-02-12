@@ -13,6 +13,7 @@ public class ClientAuthentication {
 
 	/**
 	 * DO NOT USE THIS METHOD IN PRODUCTION! It's just a POC.
+	 * TODO: Create a real authentication flow.
 	 * @param clientId
 	 * @param clientSecret
 	 * @return
@@ -36,7 +37,15 @@ public class ClientAuthentication {
 					ok = true;
 				}
 			}
-			
+
+			ResourceServer rs = config.getResourceServerWithClientId(clientId);
+			if(rs != null) {
+				if(rs.getClientId().equals(clientId) && rs.getClientSecret().equals(clientSecret)) {
+					logger.debug("Resource Server '" + clientId + "' authenticated successfully.");
+					ok = true;
+				}
+			}
+
 			return ok;
 		}
 	}

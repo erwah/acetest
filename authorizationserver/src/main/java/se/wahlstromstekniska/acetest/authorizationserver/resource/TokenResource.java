@@ -77,7 +77,7 @@ public class TokenResource extends CoapResource {
 	        	if(authenticated) {
 	
 	        		// does user have access to the resource server
-	        		ResourceServer rs = config.getResourceServer(tokenRequest.getAud());
+	        		ResourceServer rs = config.getResourceServerWithAud(tokenRequest.getAud());
 	        		if(rs != null) {
 	        			logger.debug("Found requested Resource Server in Authorization Servers control.");
 	

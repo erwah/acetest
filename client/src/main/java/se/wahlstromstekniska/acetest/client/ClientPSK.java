@@ -68,7 +68,7 @@ public class ClientPSK {
 			}
 			
 			// use the keys KID value as PSK Identity
-			String pskIdentity = ojwk.getKeyId();
+			String pskIdentity = jwk.getKeyId();
 
 
 			// send key to resource servers authz-info resource

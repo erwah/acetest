@@ -27,7 +27,7 @@ public class IntrospectResponse {
 	private String cti = "";
 
 	private String aif = "";
-	private String key = "";
+	private String cnf = "";
 
 	
 	public IntrospectResponse(boolean active) {
@@ -39,6 +39,8 @@ public class IntrospectResponse {
 			String json = new String(payload, StandardCharsets.UTF_8);
 			JSONObject obj = new JSONObject(json);
 			setActive(obj.getBoolean("active"));
+			setAud(obj.getString("aud"));
+			setCnf(obj.getJSONObject("cnf").toString());
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
 			throw new Exception("Not implemented yet");
@@ -53,13 +55,17 @@ public class IntrospectResponse {
 		if(contentFormat == MediaTypeRegistry.APPLICATION_JSON) {
 			String json = "{ "
 					+ "\n\t\"active\" : " + active;
-			
-			if(key != null && key.length() > 0) {
-				json += ",\n\t\"key\" : " + key;
+
+			if(aud != null && aud.length() > 0) {
+				json += ",\n\t\"aud\" : \"" + aud + "\"";
+			}
+
+			if(cnf != null && cnf.length() > 0) {
+				json += ",\n\t\"cnf\" : {\"jwk\":" + cnf + "}";
 			}
 			
 			if(aif!= null && aif.length() > 0) {
-				json += ",\n\t\"aif\" : " + aif;
+				json += ",\n\t\"aif\" : \"" + aif + "\"";
 			}
 
 			json += "\n}";
@@ -154,12 +160,12 @@ public class IntrospectResponse {
 		this.aif = aif;
 	}
 
-	public String getKey() {
-		return key;
+	public String getCnf() {
+		return cnf;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setCnf(String cnf) {
+		this.cnf = cnf;
 	}
 
 	@Override
@@ -168,8 +174,8 @@ public class IntrospectResponse {
 				+ ", client_id=" + client_id + ", username=" + username
 				+ ", token_type=" + token_type + ", exp=" + exp + ", iat="
 				+ iat + ", nbf=" + nbf + ", sub=" + sub + ", aud=" + aud
-				+ ", iss=" + iss + ", cti=" + cti + ", aif=" + aif + ", key="
-				+ key + "]";
+				+ ", iss=" + iss + ", cti=" + cti + ", aif=" + aif + ", cnf="
+				+ cnf + "]";
 	}
 
 }

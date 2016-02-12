@@ -21,15 +21,20 @@ public class SystemSetup {
 	
 	static String asPskIdentity = generateRandomString();
 	static String asPskKey = generateRandomString();
-	static String clientSecret = generateRandomString();
 
 	
 	// TODO: remove. It's there now for clarity when developing.
-//	static String clientId =  generateRandomString();
-//	static String aud =  generateRandomString();
-	static String clientId =  "myClient";
 	static String aud =  "tempSensor";
 
+	// TODO: remove. It's there now for clarity when developing.
+	static String clientsClientId =  "myClient";
+	static String clientsClientSecret = generateRandomString();
+
+	// TODO: remove. It's there now for clarity when developing.
+	static String rsClientId =  "myRS";
+	static String rsClientSecret = generateRandomString();
+
+	// TODO: remove. It's there now for clarity when developing.
 	static String scopes = "read write";
 	
 	static String authorizationServerConfigPath = "../authorizationserver/src/main/resources/authorizationserver.json";
@@ -98,18 +103,20 @@ public class SystemSetup {
 				+ "},"
 				+"\"clients\" : ["
 				+"	{"
-				+		"\"clientId\":\"" + clientId + "\","
-				+		"\"clientSecret\" : \"" + clientSecret + "\","
+				+		"\"clientId\":\"" + clientsClientId + "\","
+				+		"\"clientSecret\" : \"" + clientsClientSecret + "\","
 				+		"\"keyEncryptionMethod\": \"ec\","
 				+		"\"encryptionKey\": " + clientEncryptKey.toJson(OutputControlLevel.PUBLIC_ONLY)
 				+  "}"
 				+"],"
 				+"\"resourceservers\" : ["
 				+	"{"
+				+		"\"clientId\":\"" + rsClientId + "\","
+				+		"\"clientSecret\" : \"" + rsClientSecret + "\","
 				+		"\"aud\":\"" + aud + "\","
 				+		"\"tokenformat\":\"JWT\","
 				+		"\"csp\" : \"DLTS\","
-				+		"\"authorizedClients\" : [\"" + clientId + "\"],"
+				+		"\"authorizedClients\" : [\"" + clientsClientId + "\"],"
 				+		"\"scopes\" : \"" + scopes + "\","
 				+		"\"transportEncryption\" : \"dtls-psk\","
 				+		"\"serverKey\": " + rsDtlsRPK.toJson(OutputControlLevel.PUBLIC_ONLY) + ","
@@ -127,13 +134,19 @@ public class SystemSetup {
 		String json = "{" 
 			+ "\"resourceserverconfig\" : {"
 			+	 "\"resourceserver\" : {"
+			+		"\"clientId\":\"" + rsClientId + "\","
+			+		"\"clientSecret\" : \"" + rsClientSecret + "\","
 			+		"\"aud\":\"" + aud + "\","
 			+	 	"\"coapPort\": 6683,"
 			+		"\"coapsPort\" : 6684,"
 			+		"\"rpk\" : " + rsDtlsRPK.toJson(OutputControlLevel.INCLUDE_PRIVATE)
 			+	 "},"
 			+	 "\"authorizationserver\" : {"
-			+		"\"asSignKey\" : " + signAndEncryptKey.toJson(OutputControlLevel.PUBLIC_ONLY) + ""
+			+		"\"asSignKey\" : " + signAndEncryptKey.toJson(OutputControlLevel.PUBLIC_ONLY) + ","
+			+	 	"\"pskIdentity\": \"" + asPskIdentity + "\","
+			+		"\"pskKey\" : \"" + asPskKey + "\","
+			+	 	"\"coapPort\": 5683,"
+			+		"\"coapsPort\" : 5684"
 			+	 "}"
 			+ "}"
 			+"}";
@@ -148,8 +161,8 @@ public class SystemSetup {
 			+ "\"clientconfig\" : {"
 			+	 "\"client\" : {"
 			+		"\"encryptionKey\" : " + clientEncryptKey.toJson(OutputControlLevel.INCLUDE_PRIVATE) + ","
-			+	 	"\"client_id\": \"" + clientId + "\","
-			+	 	"\"client_secret\": \"" + clientSecret + "\","
+			+	 	"\"client_id\": \"" + clientsClientId + "\","
+			+	 	"\"client_secret\": \"" + clientsClientSecret + "\","
 			+	 "},"
 			+	 "\"authorizationserver\" : {"
 			+	 	"\"coapPort\": 5683,"

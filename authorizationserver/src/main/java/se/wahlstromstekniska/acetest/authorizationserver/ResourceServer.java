@@ -3,7 +3,6 @@ package se.wahlstromstekniska.acetest.authorizationserver;
 import java.util.ArrayList;
 
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 
 public class ResourceServer {
 
@@ -15,6 +14,8 @@ public class ResourceServer {
 	public static int TRANSPORT_ENCRYPTION_DTLS_CERT = 2;
 	public static int TRANSPORT_ENCRYPTION_OSCON = 3;
 	
+	private String clientId;
+	private String clientSecret;
 	private String aud;
 	private ArrayList<AccessToken> accessTokens = new ArrayList<AccessToken>();
 	private ArrayList<String> authorizedClients = new ArrayList<String>();
@@ -69,7 +70,7 @@ public class ResourceServer {
 		accessTokens.remove(token);
 	}
 	
-	public AccessToken getResourceTokensTokenRepresentation(String token) {
+	public AccessToken getResourceServersTokenRepresentation(String token) {
 		for (AccessToken t : accessTokens) {
 			if(t.getAccessToken().equals(token)) {
 				return t;
@@ -110,13 +111,32 @@ public class ResourceServer {
 		this.rpk = rpk;
 	}
 
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	public String getClientSecret() {
+		return clientSecret;
+	}
+
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
 	@Override
 	public String toString() {
-		return "ResourceServer [aud=" + aud + ", accessTokens=" + accessTokens
-				+ ", authorizedClients=" + authorizedClients + ", csp=" + csp
-				+ ", tokenformat=" + tokenformat + ", scopes=" + scopes
-				+ ", transportEncryption=" + transportEncryption
-				+ ", rpk=" + rpk.toJson(OutputControlLevel.PUBLIC_ONLY) + "]";
+		return "ResourceServer [clientId=" + clientId + ", clientSecret="
+				+ clientSecret + ", aud=" + aud + ", accessTokens="
+				+ accessTokens + ", authorizedClients=" + authorizedClients
+				+ ", csp=" + csp + ", tokenformat=" + tokenformat + ", scopes="
+				+ scopes + ", transportEncryption=" + transportEncryption
+				+ ", rpk=" + rpk + "]";
 	}
+	
 	
 }

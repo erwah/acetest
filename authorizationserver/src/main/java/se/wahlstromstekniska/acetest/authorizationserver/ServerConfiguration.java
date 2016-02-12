@@ -58,6 +58,9 @@ public class ServerConfiguration {
 	    	    String aud = item.getString("aud");
 	            ResourceServer rs = new ResourceServer(aud);
 
+	            rs.setClientId(item.getString("clientId"));
+	            rs.setClientSecret(item.getString("clientSecret"));
+
 	    	    String csp = item.getString("csp");
 	            rs.setCsp(csp);
 
@@ -82,7 +85,6 @@ public class ServerConfiguration {
 	    	    if("oscon".equals(transportEncryption)) {
 		            rs.setTransportEncryption(ResourceServer.TRANSPORT_ENCRYPTION_OSCON);
 	    	    }
-	    	    
 
 	    	    String scopes = item.getString("scopes");
 	    	    rs.setScopes(scopes);
@@ -150,7 +152,20 @@ public class ServerConfiguration {
 		return instance;
 	}
 
-	public ResourceServer getResourceServer(String aud) {
+	public ResourceServer getResourceServerWithClientId(String clientId) {
+		ResourceServer foundRS = null;
+		if(clientId != null && clientId.trim().length() != 0) {
+			for (ResourceServer rs : resourceServers) {
+				if(rs.getClientId().equals(clientId.trim())) {
+					foundRS = rs;
+				}
+			}
+		}
+		return foundRS;
+	}
+
+	
+	public ResourceServer getResourceServerWithAud(String aud) {
 		ResourceServer foundRS = null;
 		if(aud != null && aud.trim().length() != 0) {
 			for (ResourceServer rs : resourceServers) {

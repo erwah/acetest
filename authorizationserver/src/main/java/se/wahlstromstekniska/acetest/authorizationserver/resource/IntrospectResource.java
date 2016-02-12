@@ -68,15 +68,14 @@ public class IntrospectResource extends CoapResource {
         		
         		// loop through all resources, find token.
         		for (ResourceServer rs : config.getResourceServers()) {
-        			AccessToken accessToken = rs.getResourceTokensTokenRepresentation(introspectRequest.getToken());
+        			AccessToken accessToken = rs.getResourceServersTokenRepresentation(introspectRequest.getToken());
         			if(accessToken != null) {
-        				if(rs.isClientAuthorized(introspectRequest.getClientID())) {
-        					response.setActive(true);
-        					response.setAud(rs.getAud());
-        					response.setKey(accessToken.getKey().toJson(OutputControlLevel.INCLUDE_PRIVATE));
-        					
-        					// TODO: handle AIF
-        				}
+        				// found this token under the current resource server
+    					response.setActive(true);
+    					response.setAud(rs.getAud());
+    					response.setCnf(accessToken.getKey().toJson(OutputControlLevel.INCLUDE_PRIVATE));
+    					
+    					// TODO: handle AIF
         			}
 				}
         		

@@ -20,11 +20,18 @@ public class ResourceServerConfiguration {
 
 	private static ResourceServerConfiguration instance = null;
 	
-	private int coapPort = 6683;
-	private int coapsPort = 6684;
-	
-	private String psk = null;
-		
+	private int coapPort;
+	private int coapsPort;
+
+	private int asCoapPort;
+	private int asCoapsPort;
+
+	private String clientId = null;
+	private String clientSecret = null;
+
+	private String asPskIdentity = null;
+	private String asPskKey = null;
+
 	private static JSONObject properties = null;
 	
 	private String configFilePath = "/resourceserver.json";
@@ -52,18 +59,26 @@ public class ResourceServerConfiguration {
 			setProperties(new JSONObject(configWriter.toString()));
 			
 	    	// load port(s) config
-	    	logger.debug("Loading ports resource servers.");
 	    	setCoapPort(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getInt("coapPort"));
 	    	setCoapsPort(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getInt("coapsPort"));
 
 	    	setAud(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getString("aud"));
+
+	    	setClientId(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getString("clientId"));
+	    	setClientSecret(getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getString("clientSecret"));
 
 	    	String key = getProperties().getJSONObject("resourceserverconfig").getJSONObject("resourceserver").getJSONObject("rpk").toString();
     		setRpk((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(key.toString()));
 
 	    	String signKey = getProperties().getJSONObject("resourceserverconfig").getJSONObject("authorizationserver").getJSONObject("asSignKey").toString();
     		setAsSignKey((EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(signKey.toString()));
-    		
+
+	    	setAsPskIdentity(getProperties().getJSONObject("resourceserverconfig").getJSONObject("authorizationserver").getString("pskIdentity"));
+	    	setAsPskKey(getProperties().getJSONObject("resourceserverconfig").getJSONObject("authorizationserver").getString("pskKey"));
+
+	    	setAsCoapPort(getProperties().getJSONObject("resourceserverconfig").getJSONObject("authorizationserver").getInt("coapPort"));
+	    	setAsCoapsPort(getProperties().getJSONObject("resourceserverconfig").getJSONObject("authorizationserver").getInt("coapsPort"));
+
 		} catch (Exception e) {
 			logger.fatal("Failed to parse configuration file: " + configFilePath);
 			logger.fatal(e);
@@ -111,14 +126,6 @@ public class ResourceServerConfiguration {
 		this.coapsPort = coapsPort;
 	}
 
-	public String getPsk() {
-		return psk;
-	}
-
-	public void setPsk(String psk) {
-		this.psk = psk;
-	}
-
 	public InMemoryPskStore getPskStorage() {
 		return pskStorage;
 	}
@@ -157,6 +164,54 @@ public class ResourceServerConfiguration {
 
 	public void setAud(String aud) {
 		this.aud = aud;
+	}
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	public String getClientSecret() {
+		return clientSecret;
+	}
+
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
+	public String getAsPskIdentity() {
+		return asPskIdentity;
+	}
+
+	public void setAsPskIdentity(String asPskIdentity) {
+		this.asPskIdentity = asPskIdentity;
+	}
+
+	public String getAsPskKey() {
+		return asPskKey;
+	}
+
+	public void setAsPskKey(String asPskKey) {
+		this.asPskKey = asPskKey;
+	}
+
+	public int getAsCoapPort() {
+		return asCoapPort;
+	}
+
+	public void setAsCoapPort(int asCoapPort) {
+		this.asCoapPort = asCoapPort;
+	}
+
+	public int getAsCoapsPort() {
+		return asCoapsPort;
+	}
+
+	public void setAsCoapsPort(int asCoapsPort) {
+		this.asCoapsPort = asCoapsPort;
 	}
 
 }

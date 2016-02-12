@@ -8,12 +8,12 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 
-public class AuthInfoServer extends CoapServer {
+public class AuthInfoIntrospectionServer extends CoapServer {
 	
 	private static ResourceServerConfiguration config = ResourceServerConfiguration.getInstance();
 
-	AuthInfoServer() {
-	    add(new AuthzInfoResource());
+	AuthInfoIntrospectionServer() {
+	    add(new AuthzInfoIntrospectionResource());
 
 		for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
 			// only binds to IPv4 addresses and localhost
