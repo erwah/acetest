@@ -3,6 +3,8 @@ Just a test. Do not use in production.
 
 Authorization Server supports symmetric and assymetric pop tokens and uses JSON/JWT as formats. The client proves possessions of keys using DTLS PSK or DTLS RPK.
 
+NOTE: Requires a patched Scandium.
+
 ## Configuration
 Run the main method in systemsetup/src/main/java/se/wahlstromstekniska/acetest/systemsetup/SystemSetup.java and it will automatically create dummy configurations for AS, RS and C.
 
