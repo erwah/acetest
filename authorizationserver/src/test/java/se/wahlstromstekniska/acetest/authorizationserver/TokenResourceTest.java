@@ -45,10 +45,10 @@ public class TokenResourceTest {
 
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getResourceServers().get(0).getAud());
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
+		req.setScopes(config.getResourceServers().get(0).getScopes());
 
 		request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
 		request.setPayload(req.toPayload(MediaTypeRegistry.APPLICATION_JSON));
@@ -56,7 +56,7 @@ public class TokenResourceTest {
 
 		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
-		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), config.getResourceServers().get(0).getAud(), MediaTypeRegistry.APPLICATION_JSON);
 	}
 	
 	@Test
@@ -64,10 +64,10 @@ public class TokenResourceTest {
 
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getResourceServers().get(0).getAud());
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
+		req.setScopes(config.getResourceServers().get(0).getScopes());
 
 		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 
@@ -84,10 +84,10 @@ public class TokenResourceTest {
 		
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getResourceServers().get(0).getAud());
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
+		req.setScopes(config.getResourceServers().get(0).getScopes());
 		req.setKey(popKey);
 
 		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
@@ -96,7 +96,7 @@ public class TokenResourceTest {
 		
 		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
-		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), config.getResourceServers().get(0).getAud(), MediaTypeRegistry.APPLICATION_JSON);
 	}
 
 	@Test
@@ -107,10 +107,10 @@ public class TokenResourceTest {
 		
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getResourceServers().get(0).getAud());
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
+		req.setScopes(config.getResourceServers().get(0).getScopes());
 		req.setKey(popKey);
 
 		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
@@ -119,7 +119,7 @@ public class TokenResourceTest {
 		
 		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
-		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), config.getResourceServers().get(0).getAud(), MediaTypeRegistry.APPLICATION_JSON);
 	}
 
 
@@ -132,17 +132,17 @@ public class TokenResourceTest {
 		
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
-		req.setScopes("read write");
+		req.setAud(config.getResourceServers().get(0).getAud());
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
+		req.setScopes(config.getResourceServers().get(0).getScopes());
 		req.setKey(jwk);
 
 		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.TOKEN_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());		
 
 		TokenResponse tokenResponse = new TokenResponse(response.getPayload(), MediaTypeRegistry.APPLICATION_JSON);
 
-		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), "tempSensorInLivingRoom", MediaTypeRegistry.APPLICATION_JSON);
+		TestUtils.validateToken(tokenResponse.getAccessToken().getBytes(), config.getResourceServers().get(0).getAud(), MediaTypeRegistry.APPLICATION_JSON);
 	}
 	
 
@@ -150,9 +150,9 @@ public class TokenResourceTest {
 	public void testWrongScopes() throws Exception {
 		TokenRequest req = new TokenRequest();
 		req.setGrantType("client_credentials");
-		req.setAud("tempSensorInLivingRoom");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
+		req.setAud(config.getResourceServers().get(0).getAud());
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
 		req.setScopes("wrongscopes");
 		callBadRequestEndpointCall(req.toPayload(MediaTypeRegistry.APPLICATION_JSON), "invalid_scope", MediaTypeRegistry.APPLICATION_JSON);
 	}	

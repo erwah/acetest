@@ -11,7 +11,7 @@ import org.jose4j.jwt.JwtClaims;
 
 public class JWT {
 
-	public AccessToken generateJWT(boolean isSymmetric, EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey popKey, String encryptedSymmetricPopKey, String pskIdentity) throws Exception {
+	public AccessToken generateJWT(boolean isSymmetric, EllipticCurveJsonWebKey signingKey, String aud, String scopes, JsonWebKey popKey, String encryptedSymmetricPopKey) throws Exception {
 
 		AccessToken token = new AccessToken();
 		token.setAudience(aud);
@@ -26,11 +26,6 @@ public class JWT {
 	    
 	    token.setIssuedAt(new Date(claims.getIssuedAt().getValue()));
 
-	    if(pskIdentity != null && pskIdentity.length() > 0) {
-		    // when using PSK the client is required to send a PSK Identity to the RS
-		    claims.setClaim("psk_identity", pskIdentity);
-	    }
-	    
 	    JsonWebSignature jws = new JsonWebSignature();
 
 	    String claimsJson = claims.toJson();

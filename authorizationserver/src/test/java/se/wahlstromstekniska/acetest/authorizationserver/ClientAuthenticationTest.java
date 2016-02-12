@@ -5,6 +5,8 @@ import org.junit.Test;
 
 public class ClientAuthenticationTest {
 
+	private static ServerConfiguration config = ServerConfiguration.getInstance();
+	
 	ClientAuthentication auth = new ClientAuthentication();
 
 	@Test
@@ -23,7 +25,10 @@ public class ClientAuthenticationTest {
 
 	@Test
 	public void realTestCreds() {
-		Assert.assertTrue(auth.authenticate("myclient", "qwerty"));
+		
+		for (Client client : config.getClients()) {
+			Assert.assertTrue(auth.authenticate(client.getClient_id(), client.getClient_secret()));
+		}
 	}
 
 	@Test

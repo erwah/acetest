@@ -33,7 +33,7 @@ public class JWTTest {
 		jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
 		jwk.setKeyId("testkid");
 
-		token = jwt.generateJWT(true, config.getSignAndEncryptKey(), "myAud", "read", jwk, "encryptedKey", "erwah");
+		token = jwt.generateJWT(true, config.getSignAndEncryptKey(), "myAud", "read", jwk, "erwah");
 	}
 	
 	@Test

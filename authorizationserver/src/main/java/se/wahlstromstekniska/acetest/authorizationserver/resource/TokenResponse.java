@@ -18,7 +18,6 @@ public class TokenResponse {
 	
 	// TODO: It's right now a JWK serialized as a string, but we need to handle COSE in a good way also.
 	private String key = null;
-	private String pskIdentity = null;
 	private EllipticCurveJsonWebKey rpk = null;
 	
 	public EllipticCurveJsonWebKey getRpk() {
@@ -44,9 +43,6 @@ public class TokenResponse {
 					setKey(obj.getString("key"));
 				}
 			}
-			if(obj.has("psk_identity")) {
-				setPskIdentity(obj.getString("psk_identity"));
-			}
 			if(obj.has("rpk")) {
 		    	String rpk = obj.getJSONObject("rpk").toString();
 		    	EllipticCurveJsonWebKey rpkJWK = (EllipticCurveJsonWebKey) EllipticCurveJsonWebKey.Factory.newPublicJwk(rpk);
@@ -61,12 +57,11 @@ public class TokenResponse {
 		}		
 	}
 	
-	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key, String pskIdentity, EllipticCurveJsonWebKey rpk) {
+	public TokenResponse(AccessToken accessToken, String tokenType, String csp, String key, EllipticCurveJsonWebKey rpk) {
 		this.accessToken = accessToken.getAccessToken();
 		this.tokenType = tokenType;
 		this.csp = csp;
 		this.key = key;
-		this.pskIdentity = pskIdentity;
 		this.rpk = rpk;
 	}
 
@@ -80,10 +75,6 @@ public class TokenResponse {
 			
 			if(key != null) {
 				json += ",\n\t\"key\" : " + key;
-			}
-
-			if(pskIdentity != null) {
-				json += ",\n\t\"psk_identity\" : \"" + pskIdentity + "\"";
 			}
 
 			if(rpk != null) {
@@ -127,14 +118,5 @@ public class TokenResponse {
 	public void setKey(String key) {
 		this.key = key;
 	}
-
-	public String getPskIdentity() {
-		return pskIdentity;
-	}
-
-	public void setPskIdentity(String pskIdentity) {
-		this.pskIdentity = pskIdentity;
-	}
-
 
 }

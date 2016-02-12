@@ -186,7 +186,11 @@ public class ServerConfiguration {
 		}
 		return found;
 	}
-	
+
+	public ArrayList<Client> getClients() {
+		return clients;
+	}
+
 	public static JSONObject getProperties() {
 		return properties;
 	}

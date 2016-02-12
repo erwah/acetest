@@ -52,8 +52,6 @@ public class ClientPSK {
 			String accessToken = tokenResponse.getAccessToken();
 			String encryptedKey = tokenResponse.getKey();
 			
-			String pskIdentity = tokenResponse.getPskIdentity();
-
 			// decrypt the key string 
 			JsonWebEncryption jwe = new JsonWebEncryption();
 			jwe.setKey(config.getEncryptionKey().getEcPrivateKey());
@@ -70,6 +68,10 @@ public class ClientPSK {
 				ojwk = new OctetSequenceJsonWebKey(jwk.getKey());
 			}
 			
+			// use the keys KID value as PSK Identity
+			String pskIdentity = ojwk.getKeyId();
+
+
 			// send key to resource servers authz-info resource
 			Request authzInfoRequest = Request.newPost();
 			authzInfoRequest.setURI("coap://localhost:"+config.getRsCoapPort()+"/"+Constants.AUTHZ_INFO_RESOURCE);

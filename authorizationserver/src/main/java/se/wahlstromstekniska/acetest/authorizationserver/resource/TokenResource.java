@@ -96,11 +96,12 @@ public class TokenResource extends CoapResource {
 
 		        				boolean isSymmetricKey = false;
 
+		        				String pskIdentity = new BigInteger(130, random).toString(32);
+		        				
 								try {
 									AccessToken token = null;
 									String clientsEncryptedKey = "";
 									String rsEncryptedKey = "";
-									String pskIdentity = "";
 									
 									if(rs.getTokenFormat() == ResourceServer.TOKEN_FORMAT_JWT) {
 										// get authorization servers signing key
@@ -113,17 +114,12 @@ public class TokenResource extends CoapResource {
 											isSymmetricKey = true;
 											popKey = OctJwkGenerator.generateJwk(128);
 											
-											// generate a unique kid for the newly generated key
-										    String kid = new BigInteger(130, random).toString(32);
-											popKey.setKeyId(kid);
-
+											// Use a random string as kid that will later be used as PSK identity by the client.
+											popKey.setKeyId(pskIdentity);
 										}
 										else {
 											
 										}
-										// generate a unique PSK identity that's used by by the client when accessing the resource server
-										// TODO: Replace with KID
-										pskIdentity = new BigInteger(130, random).toString(32);
 
 										if(isSymmetricKey) {
 											// encrypt the symmetric pop key two times, first for client and then for the RS
@@ -144,10 +140,10 @@ public class TokenResource extends CoapResource {
 											rsJWE.setKey(rs.getRPK().getKey());
 											rsEncryptedKey = rsJWE.getCompactSerialization();
 											// if it's an symmetric key then it needs to be sent encrypted, otherwise it can be sent using public keys
-											token = jwt.generateJWT(true, config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, rsEncryptedKey, pskIdentity);
+											token = jwt.generateJWT(true, config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, rsEncryptedKey);
 										}
 										else {
-											token = jwt.generateJWT(false, config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, null, null);
+											token = jwt.generateJWT(false, config.getSignAndEncryptKey(), rs.getAud(), rs.getScopes(), popKey, null);
 										}
 
 									}
@@ -158,11 +154,11 @@ public class TokenResource extends CoapResource {
 									TokenResponse response = null;
 									if(isSymmetricKey) {
 										// using symmetric crypto, PSK identity needs to be sent
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), clientsEncryptedKey, pskIdentity, null);
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), clientsEncryptedKey, null);
 									}
 									else {
 										// using asymmetric keys and the AS public key must be sent to the client for authentication
-										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, null, rs.getRPK());
+										response = new TokenResponse(token, Constants.tokenTypePOP, rs.getCsp(), null, rs.getRPK());
 									}
 			        				
 			        				byte[] responsePayload = response.toPayload(contentFormat);

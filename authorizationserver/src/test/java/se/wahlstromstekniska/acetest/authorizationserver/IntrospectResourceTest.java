@@ -45,10 +45,10 @@ public class IntrospectResourceTest {
 		
 		TokenRequest createReq = new TokenRequest();
 		createReq.setGrantType("client_credentials");
-		createReq.setAud("tempSensorInLivingRoom");
-		createReq.setClientID("myclient");
-		createReq.setClientSecret("qwerty");
-		createReq.setScopes("read write");
+		createReq.setAud(config.getResourceServers().get(0).getAud());
+		createReq.setClientID(config.getClients().get(0).getClient_id());
+		createReq.setClientSecret(config.getClients().get(0).getClient_secret());
+		createReq.setScopes(config.getResourceServers().get(0).getScopes());
 		createReq.setKey(jwk);
 
 
@@ -60,8 +60,8 @@ public class IntrospectResourceTest {
 		// see of token is valid 
 		IntrospectRequest introspectionReq = new IntrospectRequest();
 		introspectionReq.setToken(tokenResponse.getAccessToken());
-		introspectionReq.setClientID("myclient");
-		introspectionReq.setClientSecret("qwerty");
+		introspectionReq.setClientID(config.getClients().get(0).getClient_id());
+		introspectionReq.setClientSecret(config.getClients().get(0).getClient_secret());
 		
 		Response introspectionResponse = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", introspectionReq.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());	
 
@@ -82,10 +82,10 @@ public class IntrospectResourceTest {
 		
 		TokenRequest createReq = new TokenRequest();
 		createReq.setGrantType("client_credentials");
-		createReq.setAud("tempSensorInLivingRoom");
-		createReq.setClientID("myclient");
-		createReq.setClientSecret("qwerty");
-		createReq.setScopes("read write");
+		createReq.setAud(config.getResourceServers().get(0).getAud());
+		createReq.setClientID(config.getClients().get(0).getClient_id());
+		createReq.setClientSecret(config.getClients().get(0).getClient_secret());
+		createReq.setScopes(config.getResourceServers().get(0).getScopes());
 		createReq.setKey(jwk);
 		
 		Request request = Request.newPost();
@@ -102,8 +102,8 @@ public class IntrospectResourceTest {
 		// see of token is valid 
 		IntrospectRequest introspectionReq = new IntrospectRequest();
 		introspectionReq.setToken(tokenResponse.getAccessToken());
-		introspectionReq.setClientID("myclient");
-		introspectionReq.setClientSecret("qwerty");
+		introspectionReq.setClientID(config.getClients().get(0).getClient_id());
+		introspectionReq.setClientSecret(config.getClients().get(0).getClient_secret());
 		
 		Request introspectionRequest = Request.newPost();
 		introspectionRequest.setURI("coap://localhost:"+config.getCoapPort()+"/"+Constants.INSTROSPECTION_RESOURCE);
@@ -141,8 +141,9 @@ public class IntrospectResourceTest {
 	public void invalidToken() throws Exception {
 		IntrospectRequest req = new IntrospectRequest();
 		req.setToken("loremipsum");
-		req.setClientID("myclient");
-		req.setClientSecret("qwerty");
+		
+		req.setClientID(config.getClients().get(0).getClient_id());
+		req.setClientSecret(config.getClients().get(0).getClient_secret());
 		
 		Response response = DTLSUtils.dtlsPSKRequest("coaps://localhost:"+config.getCoapsPort()+"/"+Constants.INSTROSPECTION_RESOURCE, "POST", req.toPayload(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON, config.getPskIdentity(), config.getPskKey().getBytes());	
 

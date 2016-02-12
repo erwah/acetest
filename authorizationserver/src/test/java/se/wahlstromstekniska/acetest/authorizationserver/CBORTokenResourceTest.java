@@ -1,17 +1,7 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.jose4j.jwk.EcJwkGenerator;
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.keys.EllipticCurves;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import se.wahlstromstekniska.acetest.authorizationserver.resource.TokenRequest;
 
 public class CBORTokenResourceTest {
 
