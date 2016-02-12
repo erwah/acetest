@@ -1,21 +1,16 @@
 package se.wahlstromstekniska.acetest.authorizationserver;
 
 
-import java.security.Key;
-
 import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
-import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
-import org.jose4j.keys.AesKey;
 import org.jose4j.keys.EllipticCurves;
-import org.jose4j.lang.ByteUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

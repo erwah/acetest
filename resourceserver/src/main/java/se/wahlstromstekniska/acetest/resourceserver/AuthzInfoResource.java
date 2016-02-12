@@ -3,7 +3,6 @@ package se.wahlstromstekniska.acetest.resourceserver;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.californium.core.CoapResource;
@@ -23,7 +22,6 @@ import org.jose4j.lang.JoseException;
 import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.Constants;
-import se.wahlstromstekniska.acetest.authorizationserver.ServerConfiguration;
 import se.wahlstromstekniska.acetest.authorizationserver.resource.Exchange;
 
 

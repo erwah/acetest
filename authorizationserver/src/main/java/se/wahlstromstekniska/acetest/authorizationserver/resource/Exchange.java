@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.json.JSONObject;
 
 public class Exchange {
 	final static Logger logger = Logger.getLogger(Exchange.class);

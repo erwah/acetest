@@ -1,8 +1,6 @@
 package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.jose4j.jwk.JsonWebKey;
@@ -11,8 +9,6 @@ import org.json.JSONObject;
 
 import se.wahlstromstekniska.acetest.authorizationserver.Constants;
 import se.wahlstromstekniska.acetest.authorizationserver.exception.RequestException;
-import co.nstant.in.cbor.CborDecoder;
-import co.nstant.in.cbor.model.DataItem;
 
 /**
  * Parses a TokenReques, JSON or CBOR and expose getters for all values.
@@ -48,16 +44,15 @@ public class TokenRequest {
 			}
 		}
 		else if(contentFormat == MediaTypeRegistry.APPLICATION_CBOR) {
+			
+			/*
 			ByteArrayInputStream bais = new ByteArrayInputStream(payload);
 			List<DataItem> dataItems = new CborDecoder(bais).decode();
 			for(DataItem dataItem : dataItems) {
 				
-				String s = dataItem.toString();
 				
 				
 				
-				
-/*
   				setGrantType(obj.getString("grant_type"));
  
 				setAud(obj.getString("aud"));
@@ -71,8 +66,8 @@ public class TokenRequest {
 					JsonWebKey jwk = JsonWebKey.Factory.newJwk(obj.getJSONObject("key").toString());
 					setKey(jwk);
 				}
-*/
 			}
+*/
 		}
 		else {
 			throw new Exception("Unknown content format.");

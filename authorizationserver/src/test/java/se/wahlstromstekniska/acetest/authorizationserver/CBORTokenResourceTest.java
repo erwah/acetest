@@ -5,8 +5,6 @@ import org.junit.Test;
 
 public class CBORTokenResourceTest {
 
-	private static ServerConfiguration config = ServerConfiguration.getInstance();
-
 	@Before
 	public void startupServer() throws Exception {
 		try {

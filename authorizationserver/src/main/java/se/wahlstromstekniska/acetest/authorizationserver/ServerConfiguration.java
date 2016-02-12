@@ -7,11 +7,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
-import org.jose4j.keys.EllipticCurves;
-import org.jose4j.lang.JoseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -168,12 +164,6 @@ public class ServerConfiguration {
 
 	public ArrayList<ResourceServer> getResourceServers() {
 		return resourceServers;
-	}
-
-	private EllipticCurveJsonWebKey generateKey(String kid) throws JoseException {
-	    EllipticCurveJsonWebKey jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
-		jwk.setKeyId(kid);
-		return jwk;
 	}
 	
 	public Client getClient(String clientId) {

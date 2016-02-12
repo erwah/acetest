@@ -15,7 +15,6 @@ import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwk.EcJwkGenerator;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.keys.EllipticCurves;
 import org.jose4j.lang.JoseException;

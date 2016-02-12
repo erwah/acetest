@@ -7,7 +7,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.jwk.OctetSequenceJsonWebKey;
 
 import se.wahlstromstekniska.acetest.authorizationserver.Constants;

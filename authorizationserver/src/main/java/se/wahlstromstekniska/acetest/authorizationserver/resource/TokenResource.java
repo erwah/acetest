@@ -1,7 +1,6 @@
 package se.wahlstromstekniska.acetest.authorizationserver.resource;
 
 import java.math.BigInteger;
-import java.security.Key;
 import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;
@@ -15,8 +14,6 @@ import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.jwk.OctJwkGenerator;
-import org.jose4j.keys.AesKey;
-import org.jose4j.lang.ByteUtil;
 
 import se.wahlstromstekniska.acetest.authorizationserver.AccessToken;
 import se.wahlstromstekniska.acetest.authorizationserver.ClientAuthentication;
